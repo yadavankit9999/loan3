@@ -12,10 +12,13 @@ import {
   Filter,
   Menu,
   X,
-  Activity,
   Target,
   TrendingUp,
-  Sliders
+  Sliders,
+  LineChart,
+  ClipboardCheck,
+  PieChart,
+  Activity,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDashboardData } from './DataLoader';
@@ -44,13 +47,13 @@ const App = () => {
 
   const navItems = [
     { id: '1A', label: 'Associate Overview', icon: LayoutDashboard },
-    { id: '1B', label: 'Operational Diagnostics', icon: BarChart3 },
+    { id: '1B', label: 'Operational Diagnostics', icon: Activity },
     { id: '1C', label: 'Coaching Insights', icon: ShieldAlert },
     { id: '2A', label: 'Loan Performance', icon: BarChart3 },
     { id: '2B', label: 'Risk Segmentation', icon: Target },
     { id: '2C', label: 'Risk Forecasting', icon: TrendingUp },
     { id: '3A', label: 'Loss Mitigation', icon: HelpingHand },
-    { id: '3B', label: 'Assistance Effectiveness', icon: Activity },
+    { id: '3B', label: 'Assistance Effectiveness', icon: PieChart },
     { id: '3C', label: 'Assistance Strategy', icon: Sliders },
   ];
 
@@ -67,7 +70,7 @@ const App = () => {
 
   return (
     <>
-      <button className="nav-arrow left" onClick={() => handleCycle('prev')} title="Previous Page">
+      <button className={`nav-arrow left ${sidebarOpen ? 'sidebar-open' : ''}`} onClick={() => handleCycle('prev')} title="Previous Page">
         <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} />
       </button>
       <button className="nav-arrow right" onClick={() => handleCycle('next')} title="Next Page">
@@ -87,7 +90,7 @@ const App = () => {
               onClick={() => setActiveTab(item.id)}
               className={`nav-link ${activeTab === item.id ? 'active' : ''}`}
             >
-              <item.icon size={18} />
+              <item.icon size={20} style={{ minWidth: '20px', flexShrink: 0 }} />
               <span style={{ transition: 'opacity 0.2s', opacity: sidebarOpen ? 1 : 0, whiteSpace: 'nowrap' }}>{item.label}</span>
             </button>
           ))}

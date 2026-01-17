@@ -183,7 +183,7 @@ const RiskForecasting = ({ data }) => {
                                 <div style={{ width: 8, height: 8, borderRadius: '2px', background: 'var(--primary)' }} /> Historical
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                                <div style={{ width: 8, height: 8, borderRadius: '2px', background: 'white', border: '2px solid #f97316' }} /> Projected
+                                <div style={{ width: 8, height: 8, borderRadius: '2px', background: 'white', border: '2px solid #f97316' }} /> Projected Delinquency
                             </div>
                         </div>
                     } />
@@ -195,10 +195,10 @@ const RiskForecasting = ({ data }) => {
                                     hRate: d.type === 'Historical' ? d.rate : null,
                                     pRate: d.type === 'Projected' || (d.type === 'Historical' && arr[i + 1]?.type === 'Projected') ? d.rate : null
                                 }))}
-                                margin={{ top: 20, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom, left: CHART_CONFIG.marginLeft }}
+                                margin={{ top: 20, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom + 20, left: CHART_CONFIG.marginLeft }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} label={{ value: 'Timeline', ...CHART_CONFIG.xLabel }} />
+                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} label={{ value: 'Timeline', ...CHART_CONFIG.xLabel, offset: -5 }} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} width={CHART_CONFIG.yAxisWidth} unit="%" label={{ value: 'Expected Delinquency (%)', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}

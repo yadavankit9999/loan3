@@ -145,7 +145,7 @@ const LoanPerformance = ({ data }) => {
 
             <div className="charts-grid">
                 <div className="chart-card full-width">
-                    <SectionHeader title="Top 5 High-Risk Segments" />
+                    <SectionHeader title="Risk Segment Breakdown" />
                     <div className="table-container">
                         <table>
                             <thead>

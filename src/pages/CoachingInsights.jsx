@@ -149,25 +149,39 @@ const CoachingInsights = ({ data }) => {
                         <h3 className="chart-title">Associate Risk Heatmap</h3>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Competency & Risk Aggregated Scores</span>
                     </div>
+                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--success)' }}>
+                            <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--success)' }} /> Speed
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary)' }}>
+                            <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--primary)' }} /> Quality
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--warning)' }}>
+                            <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--warning)' }} /> Consistency
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--danger)' }}>
+                            <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--danger)' }} /> Compliance
+                        </div>
+                    </div>
+
                     <div style={{ height: 320 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={coaching.riskHeatmap} layout="vertical" margin={{ left: CHART_CONFIG.marginLeft, right: CHART_CONFIG.marginRight, top: 10, bottom: 10 }}>
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
                                 <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" width={80} fontSize={10} axisLine={false} tickLine={false} />
-                                <Tooltip />
-                                <Legend verticalAlign="top" height={36} iconType="circle" />
+                                <YAxis dataKey="name" type="category" width={80} fontSize={10} axisLine={false} tickLine={false} tick={{ fill: 'var(--text-main)', fontWeight: 500 }} />
+                                <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
                                 <Bar dataKey="Speed" stackId="a" fill="var(--success)" radius={[0, 0, 0, 0]} barSize={20}>
-                                    <LabelList dataKey="Speed" position="center" style={{ fill: 'white', fontSize: 9, fontWeight: 600 }} />
+                                    <LabelList dataKey="Speed" position="center" style={{ fill: 'white', fontSize: 9, fontWeight: 700 }} />
                                 </Bar>
                                 <Bar dataKey="Quality" stackId="a" fill="var(--primary)" radius={[0, 0, 0, 0]} barSize={20}>
-                                    <LabelList dataKey="Quality" position="center" style={{ fill: 'white', fontSize: 9, fontWeight: 600 }} />
+                                    <LabelList dataKey="Quality" position="center" style={{ fill: 'white', fontSize: 9, fontWeight: 700 }} />
                                 </Bar>
                                 <Bar dataKey="Consistency" stackId="a" fill="var(--warning)" radius={[0, 0, 0, 0]} barSize={20}>
-                                    <LabelList dataKey="Consistency" position="center" style={{ fill: 'white', fontSize: 9, fontWeight: 600 }} />
+                                    <LabelList dataKey="Consistency" position="center" style={{ fill: 'white', fontSize: 9, fontWeight: 700 }} />
                                 </Bar>
                                 <Bar dataKey="Compliance" stackId="a" fill="var(--danger)" radius={[0, 4, 4, 0]} barSize={20}>
-                                    <LabelList dataKey="Compliance" position="center" style={{ fill: 'white', fontSize: 9, fontWeight: 600 }} />
+                                    <LabelList dataKey="Compliance" position="center" style={{ fill: 'white', fontSize: 9, fontWeight: 700 }} />
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>

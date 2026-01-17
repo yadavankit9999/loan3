@@ -104,14 +104,14 @@ const AssistanceEffectiveness = ({ data }) => {
                     </div>
                     <div style={{ height: 300 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <FunnelChart>
+                            <FunnelChart margin={{ right: 80 }}>
                                 <Tooltip />
                                 <Funnel
                                     dataKey="count"
                                     data={effectiveness.outcomeFunnel}
                                     isAnimationActive
                                 >
-                                    <LabelList position="right" fill="#888" stroke="none" dataKey="stage" style={{ fontSize: '10px' }} />
+                                    <LabelList position="right" fill="var(--text-muted)" stroke="none" dataKey="stage" style={{ fontSize: '10px', fontWeight: 600 }} />
                                     <LabelList position="center" fill="white" stroke="none" dataKey="count" style={{ fontWeight: 700 }} />
                                     {effectiveness.outcomeFunnel.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

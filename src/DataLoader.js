@@ -311,7 +311,7 @@ export const getDashboardData = async () => {
             },
             forecasting: {
                 kpis: [
-                    { label: 'Proj. Delinquency', value: '8.2%', trend: '+0.4%', up: false },
+                    { label: 'Projected Delinquency', value: '8.2%', trend: '+0.4%', up: false },
                     { label: 'Early Warnings', value: '482', trend: '+12', up: false },
                     { label: 'Transition Rate', value: '4.5%', trend: '+0.2%', up: false },
                     { label: 'ECL Provision', value: '$12.4M', trend: '+$1.2M', up: false },

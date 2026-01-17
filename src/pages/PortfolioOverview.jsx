@@ -136,7 +136,7 @@ const PortfolioOverview = ({ data }) => {
                     </div>
                     <div style={{ height: 280 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={trendData} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
+                            <AreaChart data={trendData} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom + 20 }}>
                                 <defs>
                                     <linearGradient id="colorDelinq" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="var(--danger)" stopOpacity={0.1} />
@@ -144,8 +144,15 @@ const PortfolioOverview = ({ data }) => {
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={12} dy={10} label={{ value: 'Timeline', ...CHART_CONFIG.xLabel }} />
-                                <YAxis axisLine={false} tickLine={false} fontSize={12} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Volume', ...CHART_CONFIG.yLabel }} />
+                                <XAxis
+                                    dataKey="month"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    fontSize={10}
+                                    tick={{ dy: 5 }}
+                                    label={{ value: 'Timeline', ...CHART_CONFIG.xLabel, offset: -5 }}
+                                />
+                                <YAxis axisLine={false} tickLine={false} fontSize={10} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Volume', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip />
                                 <Area type="monotone" dataKey="delinquency" name="Delinquencies" stroke="var(--danger)" fillOpacity={1} fill="url(#colorDelinq)" strokeWidth={2}>
                                     <LabelList dataKey="delinquency" position="top" style={{ fontSize: '10px', fill: 'var(--danger)', fontWeight: 600 }} />

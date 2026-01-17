@@ -204,17 +204,34 @@ const OperationalDiagnostics = ({ data }) => {
                         </div>
                     </div>
 
-                    <div style={{ height: 220 }}>
+                    <div style={{ height: 280 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <ScatterChart margin={{ top: 10, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom + 10, left: CHART_CONFIG.marginLeft }}>
+                            <ScatterChart margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom + 25 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis type="number" dataKey="x" name="Days Migrated" tickLine={false} fontSize={10} label={{ value: 'Days Since Migration', ...CHART_CONFIG.xLabel, position: 'bottom', offset: 0 }} />
-                                <YAxis type="number" dataKey="y" name="Delinquency Days" tickLine={false} fontSize={10} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Delinquency Days', ...CHART_CONFIG.yLabel }} />
-                                <ZAxis type="number" dataKey="z" range={[50, 400]} name="Account Balance" />
+                                <XAxis
+                                    type="number"
+                                    dataKey="x"
+                                    name="Days Migrated"
+                                    tickLine={false}
+                                    fontSize={10}
+                                    tick={{ dy: 10 }}
+                                    label={{ value: 'Days Since Migration', ...CHART_CONFIG.xLabel, position: 'bottom', offset: 15 }}
+                                />
+                                <YAxis
+                                    type="number"
+                                    dataKey="y"
+                                    name="Delinquency Days"
+                                    tickLine={false}
+                                    fontSize={10}
+                                    width={CHART_CONFIG.yAxisWidth}
+                                    domain={[-5, 130]}
+                                    label={{ value: 'Delinquency Days', ...CHART_CONFIG.yLabel }}
+                                />
+                                <ZAxis type="number" dataKey="z" range={[20, 200]} name="Account Balance" />
                                 <Tooltip cursor={{ strokeDasharray: '3 3' }} />
                                 <Scatter data={diagnostics.stabilizationMatrix} legendType="none">
                                     {diagnostics.stabilizationMatrix.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.y > 90 ? '#ef4444' : '#10b981'} />
+                                        <Cell key={`cell-${index}`} fill={entry.y > 90 ? '#ef4444' : '#10b981'} fillOpacity={0.7} />
                                     ))}
                                 </Scatter>
                             </ScatterChart>
@@ -233,11 +250,12 @@ const OperationalDiagnostics = ({ data }) => {
                 <div className="flow-container" style={{ position: 'relative', width: '100%', padding: '0 2rem' }}>
                     {/* Flow Steps */}
                     {[
-                        { label: 'Current', color: 'var(--success)', value: '450' },
-                        { label: '30-60 Days', color: 'var(--warning)', value: '180' },
-                        { label: '60-90 Days', color: 'var(--danger)', value: '85' },
-                        { label: '90+ Days', color: '#991b1b', value: '42' },
-                        { label: 'Legal/Loss', color: '#450a0a', value: '15' }
+                        { label: 'Total Portfolio', color: 'var(--secondary)', value: '12,500' },
+                        { label: 'Current', color: 'var(--success)', value: '11,838' },
+                        { label: '30-60 Days', color: 'var(--warning)', value: '352' },
+                        { label: '60-90 Days', color: 'var(--danger)', value: '158' },
+                        { label: '90+ Days', color: '#991b1b', value: '112' },
+                        { label: 'Legal/Loss', color: '#450a0a', value: '40' }
                     ].map((step, i, arr) => (
                         <React.Fragment key={i}>
                             <div style={{ textAlign: 'center', zIndex: 2 }}>
