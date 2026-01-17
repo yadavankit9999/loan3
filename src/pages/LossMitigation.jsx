@@ -19,7 +19,7 @@ const LossMitigation = ({ data }) => {
         <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
             <div className="section-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Trial Period Success</h2>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Loss Mitigation Performance</h2>
                     <p style={{ color: 'var(--text-muted)' }}>Tracking assistance programs, volume trends, and processing efficiency.</p>
                 </div>
                 <button style={{

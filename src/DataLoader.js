@@ -148,12 +148,14 @@ export const getDashboardData = async () => {
             if (l.days_delinquent > 60) segmentsMap[seg].riskLoans++;
         });
 
+        const riskOrder = { 'Very Low Risk': 1, 'Low Risk': 2, 'Medium Risk': 3, 'High Risk': 4 };
+
         const riskSegments = Object.values(segmentsMap).map(s => ({
             name: s.name,
             count: s.count,
             avgDelinquency: Math.round(s.totalDelinq / s.count),
             vulnerability: Math.min(100, Math.round((s.riskLoans / s.count) * 500)), // Scale for impact
-        })).sort((a, b) => b.vulnerability - a.vulnerability).slice(0, 5);
+        })).sort((a, b) => (riskOrder[a.name] || 99) - (riskOrder[b.name] || 99));
 
         // Scatter data: Workload vs Delinquency per Associate
         const associatesWithStats = associates.map(assoc => {
@@ -174,7 +176,7 @@ export const getDashboardData = async () => {
             { label: 'Avg Process Time', value: '12 Days', trend: '-1 Day', up: true },
             { label: 'Escalation Rate', value: '3.8%', trend: '+0.5%', up: false },
             { label: 'Deferrals Active', value: '842', trend: '-4.2%', up: true },
-            { label: 'Trial Period Succ.', value: '92%', trend: '+1.2%', up: true },
+            { label: 'Trial Period Success Rate', value: '92%', trend: '+1.2%', up: true },
             { label: 'Net Loss Avoided', value: '$4.2M', trend: '+$240k', up: true }
         ];
 
