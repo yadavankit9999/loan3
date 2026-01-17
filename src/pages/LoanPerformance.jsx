@@ -7,12 +7,13 @@ import {
     LabelList
 } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, Percent, AlertCircle, ShieldCheck, FileText, UserCheck, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { CHART_CONFIG } from '../chartConfig';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 const KPICard = ({ label, value, trend, up }) => (
     <div className="card">
-        <div className="kpi-label">{label}</div>
+        <div className="kpi-label" title={label}>{label}</div>
         <div className="kpi-value">{value}</div>
         <div className={`kpi-trend ${up === null ? '' : up ? 'trend-up' : 'trend-down'}`}>
             {up === true && <ArrowUpRight size={12} />}
@@ -39,7 +40,7 @@ const LoanPerformance = ({ data }) => {
                 <p style={{ color: 'var(--text-muted)' }}>Detailed analysis of portfolio health, delinquency movements, and risk exposure.</p>
             </div>
 
-            <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(8, 1fr)' }}>
+            <div className="kpi-grid">
                 {kpis.map((kpi, i) => (
                     <KPICard key={i} {...kpi} />
                 ))}
@@ -50,10 +51,10 @@ const LoanPerformance = ({ data }) => {
                     <SectionHeader title="Portfolio Delinquency Trend" />
                     <div style={{ height: 350 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={delinquencyTrend}>
+                            <LineChart data={delinquencyTrend} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} unit="%" />
+                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} label={{ value: 'Month', ...CHART_CONFIG.xLabel }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} width={CHART_CONFIG.yAxisWidth} unit="%" label={{ value: 'Rate (%)', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
                                     formatter={(value) => [`${value}%`, 'Delinquency Rate']}
@@ -106,13 +107,13 @@ const LoanPerformance = ({ data }) => {
                     <SectionHeader title="Portfolio Value vs Risk by Region" />
                     <div style={{ height: 320 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart data={valueVsRisk}>
+                            <ComposedChart data={valueVsRisk} margin={{ top: 10, right: CHART_CONFIG.marginRight + 20, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                                <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
-                                <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
-                                <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} unit="%" />
+                                <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} label={{ value: 'Region', ...CHART_CONFIG.xLabel }} />
+                                <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Value ($M)', ...CHART_CONFIG.yLabel }} />
+                                <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} unit="%" label={{ value: 'Avg Risk (%)', angle: 90, position: 'insideRight', fontSize: 10, offset: 15 }} />
                                 <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
-                                <Legend />
+                                <Legend verticalAlign="top" align="right" />
                                 <Bar yAxisId="left" dataKey="value" name="Portfolio Value ($M)" fill="var(--primary)" radius={[4, 4, 0, 0]}>
                                     <LabelList dataKey="value" position="top" formatter={(v) => `$${v}m`} style={{ fontSize: '10px', fontWeight: 600, fill: 'var(--text-main)' }} />
                                 </Bar>
@@ -128,12 +129,12 @@ const LoanPerformance = ({ data }) => {
                     <SectionHeader title="Credit Score Distribution (Active Portfolio)" />
                     <div style={{ height: 350 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={scoreBuckets}>
+                            <BarChart data={scoreBuckets} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                                <XAxis dataKey="range" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+                                <XAxis dataKey="range" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} label={{ value: 'Credit Score Bucket', ...CHART_CONFIG.xLabel }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Loan Count', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
-                                <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]}>
+                                <Bar dataKey="count" name="Accounts" fill="var(--primary)" radius={[4, 4, 0, 0]}>
                                     <LabelList dataKey="count" position="top" style={{ fontSize: '10px', fontWeight: 600, fill: 'var(--text-main)' }} />
                                 </Bar>
                             </BarChart>

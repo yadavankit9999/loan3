@@ -127,18 +127,11 @@ const App = () => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <div className="header-search">
               <Search size={18} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)' }} />
               <input
                 type="text"
                 placeholder="Search resources..."
-                style={{
-                  padding: '0.6rem 1rem 0.6rem 2.5rem',
-                  borderRadius: '99px',
-                  border: '1px solid var(--border)',
-                  fontSize: '0.875rem',
-                  width: '240px'
-                }}
               />
             </div>
             <button style={{ background: 'none', border: 'none', color: 'var(--text-muted)', position: 'relative' }}>

@@ -10,6 +10,7 @@ import {
     LabelList
 } from 'recharts';
 import { ArrowUpRight, ArrowDownRight, Minus, TrendingUp, Users, FileText } from 'lucide-react';
+import { CHART_CONFIG } from '../chartConfig';
 
 const PortfolioOverview = ({ data }) => {
     const { kpis, raw } = data;
@@ -34,14 +35,14 @@ const PortfolioOverview = ({ data }) => {
         }).sort((a, b) => b.delinquencyRate - a.delinquencyRate).slice(0, 10);
     }, [raw]);
 
-    const trendData = [
-        { month: 'Jan', delinquency: 12, cures: 8 },
-        { month: 'Feb', delinquency: 14, cures: 10 },
-        { month: 'Mar', delinquency: 13, cures: 11 },
-        { month: 'Apr', delinquency: 15, cures: 13 },
-        { month: 'May', delinquency: 11, cures: 14 },
-        { month: 'Jun', delinquency: 10, cures: 15 },
-    ];
+    const trendData = useMemo(() => [
+        { month: 'Jul 2025', delinquency: 12, cures: 8 },
+        { month: 'Aug 2025', delinquency: 14, cures: 10 },
+        { month: 'Sep 2025', delinquency: 13, cures: 11 },
+        { month: 'Oct 2025', delinquency: 15, cures: 13 },
+        { month: 'Nov 2025', delinquency: 11, cures: 14 },
+        { month: 'Dec 2025', delinquency: 10, cures: 15 },
+    ], []);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -66,7 +67,7 @@ const PortfolioOverview = ({ data }) => {
             <div className="kpi-grid">
                 {kpis.map((kpi, i) => (
                     <div key={i} className="card">
-                        <div className="kpi-label">{kpi.label}</div>
+                        <div className="kpi-label" title={kpi.label}>{kpi.label}</div>
                         <div className="kpi-value">{kpi.value}</div>
                         <div className={`kpi-trend ${kpi.up === null ? '' : kpi.up ? 'trend-up' : 'trend-down'}`}>
                             {kpi.up === true && <ArrowUpRight size={12} />}
@@ -86,15 +87,15 @@ const PortfolioOverview = ({ data }) => {
                     </div>
                     <div style={{ height: 280 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={associateStats}>
+                            <BarChart data={associateStats} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={10} interval={0} angle={-25} textAnchor="end" height={60} />
-                                <YAxis hide />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={10} interval={0} angle={-25} textAnchor="end" height={60} label={{ value: 'Associate Name', ...CHART_CONFIG.xLabel }} />
+                                <YAxis axisLine={false} tickLine={false} fontSize={10} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Delinquency (%)', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip
                                     cursor={{ fill: '#f8fafc' }}
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 />
-                                <Bar dataKey="delinquencyRate" name="Delinquency %" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={30}>
+                                <Bar dataKey="delinquencyRate" name="Delinquency Rate" fill="var(--danger)" radius={[4, 4, 0, 0]} barSize={30}>
                                     <LabelList dataKey="delinquencyRate" position="top" style={{ fontSize: '10px', fill: 'var(--text-muted)', fontWeight: 600 }} formatter={(val) => `${val}%`} />
                                 </Bar>
                             </BarChart>
@@ -109,15 +110,15 @@ const PortfolioOverview = ({ data }) => {
                     </div>
                     <div style={{ height: 280 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={[...associateStats].sort((a, b) => b.cureRate - a.cureRate)}>
+                            <BarChart data={[...associateStats].sort((a, b) => b.cureRate - a.cureRate)} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={10} interval={0} angle={-25} textAnchor="end" height={60} />
-                                <YAxis hide />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={10} interval={0} angle={-25} textAnchor="end" height={60} label={{ value: 'Associate Name', ...CHART_CONFIG.xLabel }} />
+                                <YAxis axisLine={false} tickLine={false} fontSize={10} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Cure Rate (%)', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip
                                     cursor={{ fill: '#f8fafc' }}
                                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 />
-                                <Bar dataKey="cureRate" name="Cure Rate %" fill="var(--accent)" radius={[4, 4, 0, 0]} barSize={25}>
+                                <Bar dataKey="cureRate" name="Recovery Progress" fill="var(--accent)" radius={[4, 4, 0, 0]} barSize={25}>
                                     <LabelList dataKey="cureRate" position="top" style={{ fontSize: '10px', fill: 'var(--text-muted)', fontWeight: 600 }} formatter={(val) => `${val}%`} />
                                 </Bar>
                             </BarChart>
@@ -135,7 +136,7 @@ const PortfolioOverview = ({ data }) => {
                     </div>
                     <div style={{ height: 280 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={trendData}>
+                            <AreaChart data={trendData} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <defs>
                                     <linearGradient id="colorDelinq" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="var(--danger)" stopOpacity={0.1} />
@@ -143,8 +144,8 @@ const PortfolioOverview = ({ data }) => {
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={12} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} fontSize={12} />
+                                <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={12} dy={10} label={{ value: 'Timeline', ...CHART_CONFIG.xLabel }} />
+                                <YAxis axisLine={false} tickLine={false} fontSize={12} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Volume', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip />
                                 <Area type="monotone" dataKey="delinquency" name="Delinquencies" stroke="var(--danger)" fillOpacity={1} fill="url(#colorDelinq)" strokeWidth={2}>
                                     <LabelList dataKey="delinquency" position="top" style={{ fontSize: '10px', fill: 'var(--danger)', fontWeight: 600 }} />
@@ -165,12 +166,12 @@ const PortfolioOverview = ({ data }) => {
                     </div>
                     <div style={{ height: 280 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={associateStats}>
+                            <BarChart data={associateStats} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={10} interval={0} angle={-25} textAnchor="end" height={60} />
-                                <YAxis axisLine={false} tickLine={false} fontSize={12} />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} fontSize={10} interval={0} angle={-25} textAnchor="end" height={60} label={{ value: 'Associate Name', ...CHART_CONFIG.xLabel }} />
+                                <YAxis axisLine={false} tickLine={false} fontSize={12} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Accounts', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip />
-                                <Bar dataKey="accounts" name="Active Accounts" fill="var(--secondary)" radius={[4, 4, 0, 0]}>
+                                <Bar dataKey="accounts" name="Total Account Distribution" fill="var(--primary)" radius={[4, 4, 0, 0]}>
                                     <LabelList dataKey="accounts" position="top" style={{ fontSize: '10px', fill: 'var(--text-muted)', fontWeight: 600 }} />
                                 </Bar>
                             </BarChart>

@@ -6,6 +6,7 @@ import {
     FunnelChart, Funnel, LabelList
 } from 'recharts';
 import { ArrowUpRight, ArrowDownRight, Settings2 } from 'lucide-react';
+import { CHART_CONFIG } from '../chartConfig';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -40,10 +41,10 @@ const AssistanceEffectiveness = ({ data }) => {
             </div>
 
             {/* KPI Row - 7 items as per wireframe */}
-            <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}>
+            <div className="kpi-grid">
                 {effectiveness.kpis.map((kpi, i) => (
                     <div className="card" key={i}>
-                        <div className="kpi-label">{kpi.label}</div>
+                        <div className="kpi-label" title={kpi.label}>{kpi.label}</div>
                         <div className="kpi-value">{kpi.value}</div>
                         <div className={`kpi-trend ${kpi.up === null ? '' : kpi.up ? 'trend-up' : 'trend-down'}`}>
                             {kpi.up === true && <ArrowUpRight size={12} />}
@@ -62,12 +63,12 @@ const AssistanceEffectiveness = ({ data }) => {
                     </div>
                     <div style={{ height: 300 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={effectiveness.cureRateByProgram}>
+                            <BarChart data={effectiveness.cureRateByProgram} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="program" axisLine={false} tickLine={false} fontSize={12} />
-                                <YAxis axisLine={false} tickLine={false} fontSize={12} unit="%" />
+                                <XAxis dataKey="program" axisLine={false} tickLine={false} fontSize={12} label={{ value: 'Assistance Program', ...CHART_CONFIG.xLabel }} />
+                                <YAxis axisLine={false} tickLine={false} fontSize={12} width={CHART_CONFIG.yAxisWidth} unit="%" label={{ value: 'Success Rate (%)', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip />
-                                <Bar dataKey="rate" name="Cure Rate" fill="var(--accent)" radius={[4, 4, 0, 0]}>
+                                <Bar dataKey="rate" name="Cure Success Rate" fill="var(--accent)" radius={[4, 4, 0, 0]}>
                                     <LabelList dataKey="rate" position="top" formatter={(v) => `${v}%`} style={{ fontSize: '12px', fontWeight: 600, fill: 'var(--text-main)' }} />
                                 </Bar>
                             </BarChart>
@@ -82,14 +83,15 @@ const AssistanceEffectiveness = ({ data }) => {
                     </div>
                     <div style={{ height: 300 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={effectiveness.reDefaultRateByProgram}>
+                            <BarChart data={effectiveness.reDefaultRateByProgram} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="program" axisLine={false} tickLine={false} fontSize={12} />
-                                <YAxis axisLine={false} tickLine={false} fontSize={12} unit="%" />
+                                <XAxis dataKey="program" axisLine={false} tickLine={false} fontSize={12} label={{ value: 'Assistance Program', ...CHART_CONFIG.xLabel }} />
+                                <YAxis axisLine={false} tickLine={false} fontSize={12} width={CHART_CONFIG.yAxisWidth} unit="%" label={{ value: 'Relapse Rate (%)', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip />
-                                <Bar dataKey="rate" name="Re-default Rate" fill="var(--danger)" radius={[4, 4, 0, 0]}>
+                                <Bar dataKey="rate" name="Re-default Risk" fill="var(--primary)" radius={[4, 4, 0, 0]}>
                                     <LabelList dataKey="rate" position="top" formatter={(v) => `${v}%`} style={{ fontSize: '12px', fontWeight: 600, fill: 'var(--text-main)' }} />
                                 </Bar>
+
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -111,6 +113,9 @@ const AssistanceEffectiveness = ({ data }) => {
                                 >
                                     <LabelList position="right" fill="#888" stroke="none" dataKey="stage" style={{ fontSize: '10px' }} />
                                     <LabelList position="center" fill="white" stroke="none" dataKey="count" style={{ fontWeight: 700 }} />
+                                    {effectiveness.outcomeFunnel.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
                                 </Funnel>
                             </FunnelChart>
                         </ResponsiveContainer>
@@ -119,22 +124,28 @@ const AssistanceEffectiveness = ({ data }) => {
 
                 {/* Risk vs Outcome (Scatter) - 4 columns */}
                 <div className="card chart-card span-4">
-                    <div className="chart-header">
+                    <div className="chart-header" style={{ marginBottom: '0.75rem' }}>
                         <h3 className="chart-title">Risk vs Outcome</h3>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Success Rate by Risk Tier</span>
                     </div>
-                    <div style={{ height: 300 }}>
+
+                    {/* Custom High-Visibility Legend */}
+                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', padding: '0 1rem', marginBottom: '0.5rem' }}>
+                    </div>
+
+                    <div style={{ height: 280 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 10 }}>
+                            <ScatterChart margin={{ top: 10, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom + 10, left: CHART_CONFIG.marginLeft }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis type="number" dataKey="x" name="Risk Score" axisLine={false} tickLine={false} fontSize={10} />
-                                <YAxis type="number" dataKey="y" name="Success Rate" unit="%" axisLine={false} tickLine={false} fontSize={10} />
+                                <XAxis type="number" dataKey="x" name="Risk Score" axisLine={false} tickLine={false} fontSize={10} label={{ value: 'Pre-Program Risk Score', ...CHART_CONFIG.xLabel, position: 'bottom', offset: 0 }} />
+                                <YAxis type="number" dataKey="y" name="Success Rate" unit="%" axisLine={false} tickLine={false} fontSize={10} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Resolution Success (%)', ...CHART_CONFIG.yLabel }} />
                                 <ZAxis type="number" range={[100, 200]} />
                                 <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                                <Scatter name="Programs" data={effectiveness.riskVsOutcome} fill="var(--primary)">
+                                <Scatter name="Program Cohorts" data={effectiveness.riskVsOutcome} fill="var(--primary)" legendType="none">
                                     {effectiveness.riskVsOutcome.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
-                                    <LabelList dataKey="name" position="top" style={{ fontSize: '10px', fontWeight: 600 }} />
+                                    <LabelList dataKey="name" position="top" style={{ fontSize: '10px', fontWeight: 600, fill: 'var(--text-main)' }} />
                                 </Scatter>
                             </ScatterChart>
                         </ResponsiveContainer>
@@ -148,14 +159,15 @@ const AssistanceEffectiveness = ({ data }) => {
                     </div>
                     <div style={{ height: 300 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={effectiveness.assistanceFrequency}>
+                            <BarChart data={effectiveness.assistanceFrequency} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="frequency" axisLine={false} tickLine={false} fontSize={12} />
-                                <YAxis axisLine={false} tickLine={false} fontSize={12} />
+                                <XAxis dataKey="frequency" axisLine={false} tickLine={false} fontSize={12} label={{ value: 'Assistance Count', ...CHART_CONFIG.xLabel }} />
+                                <YAxis axisLine={false} tickLine={false} fontSize={12} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Account Volume', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip />
-                                <Bar dataKey="count" name="Accounts" fill="var(--secondary)" radius={[4, 4, 0, 0]}>
+                                <Bar dataKey="count" name="Customer Frequency" fill="var(--secondary)" radius={[4, 4, 0, 0]}>
                                     <LabelList dataKey="count" position="top" style={{ fontSize: '12px', fontWeight: 600, fill: 'var(--text-main)' }} />
                                 </Bar>
+                                <Legend verticalAlign="top" align="right" />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>

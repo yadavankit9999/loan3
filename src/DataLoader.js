@@ -1,5 +1,7 @@
 import Papa from 'papaparse';
 
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 const BASE_URL = '/data/';
 
 export const fetchData = async (fileName) => {
@@ -74,8 +76,21 @@ export const getDashboardData = async () => {
         });
         const delinquencyTrend = Object.values(trendMap)
             .sort((a, b) => a.date.localeCompare(b.date))
+            .filter(d => {
+                // STATED REQUIREMENT: History ends at Dec 2025. Projection starts at Jan 2026.
+                const [y] = d.date.split('-').map(Number);
+                return y < 2026;
+            })
             .slice(-12) // Last 12 months
-            .map(d => ({ month: d.date, rate: parseFloat(((d.delinquent / d.total) * 100).toFixed(1)) }));
+            .map(d => {
+                const [year, month] = d.date.split('-');
+                const dateObj = new Date(parseInt(year), parseInt(month) - 1, 1);
+                const monthName = MONTHS_SHORT[dateObj.getMonth()];
+                return {
+                    month: `${monthName} ${year}`,
+                    rate: parseFloat(((d.delinquent / d.total) * 100).toFixed(1))
+                };
+            });
 
         // Chart 2: Loan Status Distribution (Donut)
         const statusCounts = {
@@ -122,14 +137,23 @@ export const getDashboardData = async () => {
         });
 
         // Chart 5: Top Risk Segments (Ranked Bar)
-        const riskSegmentValue = {};
+        const segmentsMap = {};
         loans.forEach(l => {
-            if (!riskSegmentValue[l.risk_segment]) riskSegmentValue[l.risk_segment] = 0;
-            riskSegmentValue[l.risk_segment] += (l.loan_amount || 0);
+            const seg = l.risk_segment || 'Other';
+            if (!segmentsMap[seg]) {
+                segmentsMap[seg] = { name: seg, count: 0, totalDelinq: 0, riskLoans: 0 };
+            }
+            segmentsMap[seg].count++;
+            segmentsMap[seg].totalDelinq += (l.days_delinquent || 0);
+            if (l.days_delinquent > 60) segmentsMap[seg].riskLoans++;
         });
-        const riskSegments = Object.entries(riskSegmentValue)
-            .sort((a, b) => b[1] - a[1])
-            .map(([name, value]) => ({ name, value: parseFloat((value / 1000000).toFixed(2)) })); // In Millions
+
+        const riskSegments = Object.values(segmentsMap).map(s => ({
+            name: s.name,
+            count: s.count,
+            avgDelinquency: Math.round(s.totalDelinq / s.count),
+            vulnerability: Math.min(100, Math.round((s.riskLoans / s.count) * 500)), // Scale for impact
+        })).sort((a, b) => b.vulnerability - a.vulnerability).slice(0, 5);
 
         // Scatter data: Workload vs Delinquency per Associate
         const associatesWithStats = associates.map(assoc => {
@@ -162,12 +186,12 @@ export const getDashboardData = async () => {
         ];
 
         const volumeTrend = [
-            { month: 'Jul', requests: 420, completed: 380 },
-            { month: 'Aug', requests: 450, completed: 410 },
-            { month: 'Sep', requests: 480, completed: 440 },
-            { month: 'Oct', requests: 520, completed: 490 },
-            { month: 'Nov', requests: 590, completed: 530 },
-            { month: 'Dec', requests: 650, completed: 610 }
+            { month: 'Jul 2025', requests: 420, completed: 380 },
+            { month: 'Aug 2025', requests: 450, completed: 410 },
+            { month: 'Sep 2025', requests: 480, completed: 440 },
+            { month: 'Oct 2025', requests: 520, completed: 490 },
+            { month: 'Nov 2025', requests: 590, completed: 530 },
+            { month: 'Dec 2025', requests: 650, completed: 610 }
         ];
 
         const statusBreakdown = [
@@ -205,25 +229,33 @@ export const getDashboardData = async () => {
             ageBuckets[key].count++;
             if (l.days_delinquent > 60) ageBuckets[key].riskSum++;
         });
-        const loanAgeVsRisk = Object.values(ageBuckets).map(b => ({
-            name: b.name,
-            riskRate: parseFloat(((b.riskSum / b.count) * 100).toFixed(1))
-        }));
+        const loanAgeVsRisk = Object.values(ageBuckets)
+            .sort((a, b) => {
+                const ageA = parseInt(a.name.split('-')[0]);
+                const ageB = parseInt(b.name.split('-')[0]);
+                return ageA - ageB;
+            })
+            .map(b => ({
+                name: b.name,
+                riskRate: parseFloat(((b.riskSum / b.count) * 100).toFixed(1))
+            }));
 
         const vintageMap = {};
         loans.forEach(l => {
             const date = new Date(l.origination_date);
             const year = date.getFullYear();
-            const month = date.toLocaleString('default', { month: 'short' });
+            const month = MONTHS_SHORT[date.getMonth()];
             if (!vintageMap[year]) vintageMap[year] = {};
             if (!vintageMap[year][month]) vintageMap[year][month] = { sum: 0, count: 0 };
             vintageMap[year][month].count++;
             if (l.days_delinquent > 30) vintageMap[year][month].sum++;
         });
-        const vintageHeatmap = Object.entries(vintageMap).map(([year, months]) => ({
-            year,
-            ...Object.fromEntries(Object.entries(months).map(([m, data]) => [m, parseFloat(((data.sum / data.count) * 100).toFixed(1))]))
-        }));
+        const vintageHeatmap = Object.entries(vintageMap)
+            .sort((a, b) => a[0] - b[0])
+            .map(([year, months]) => ({
+                year,
+                ...Object.fromEntries(Object.entries(months).map(([m, data]) => [m, parseFloat(((data.sum / data.count) * 100).toFixed(1))]))
+            }));
 
         const segmentContribution = Object.values(regionStats).map(r => ({
             region: r.region,
@@ -289,9 +321,9 @@ export const getDashboardData = async () => {
                 ],
                 delinquencyForecast: [
                     ...delinquencyTrend.map(d => ({ ...d, type: 'Historical' })),
-                    { month: '2026-01', rate: (delinquencyTrend[delinquencyTrend.length - 1].rate + 0.2).toFixed(1), type: 'Projected' },
-                    { month: '2026-02', rate: (delinquencyTrend[delinquencyTrend.length - 1].rate + 0.5).toFixed(1), type: 'Projected' },
-                    { month: '2026-03', rate: (delinquencyTrend[delinquencyTrend.length - 1].rate + 0.3).toFixed(1), type: 'Projected' }
+                    { month: 'Jan 2026', rate: parseFloat((delinquencyTrend[delinquencyTrend.length - 1].rate + 0.2).toFixed(1)), type: 'Projected' },
+                    { month: 'Feb 2026', rate: parseFloat((delinquencyTrend[delinquencyTrend.length - 1].rate + 0.5).toFixed(1)), type: 'Projected' },
+                    { month: 'Mar 2026', rate: parseFloat((delinquencyTrend[delinquencyTrend.length - 1].rate + 0.3).toFixed(1)), type: 'Projected' }
                 ],
                 transitionMatrix: [
                     { from: 'Current', to: 'Current', value: 94.2 },
@@ -347,12 +379,12 @@ export const getDashboardData = async () => {
                     { label: 'Efficiency Variance', value: `${(migratedDelinqRate - nonMigratedDelinqRate).toFixed(1)}%`, trend: 'Alert', up: false }
                 ],
                 volumeTrend: [
-                    { month: 'Jul', volume: 420 },
-                    { month: 'Aug', volume: 380 },
-                    { month: 'Sep', volume: 510 },
-                    { month: 'Oct', volume: 460 },
-                    { month: 'Nov', volume: 620 },
-                    { month: 'Dec', volume: 580 }
+                    { month: 'Jul 2025', volume: 420 },
+                    { month: 'Aug 2025', volume: 380 },
+                    { month: 'Sep 2025', volume: 510 },
+                    { month: 'Oct 2025', volume: 460 },
+                    { month: 'Nov 2025', volume: 620 },
+                    { month: 'Dec 2025', volume: 580 }
                 ],
                 groupedComparison: [
                     { status: 'Current', Migrated: 65, 'Non-Migrated': 82 },
@@ -504,12 +536,12 @@ export const getDashboardData = async () => {
                     { label: 'Warning Sign Count', value: '12', trend: '-2', up: true }
                 ],
                 usageOutcomeTrend: [
-                    { month: 'Jul', usage: 45, outcome: 38 },
-                    { month: 'Aug', usage: 52, outcome: 42 },
-                    { month: 'Sep', usage: 48, outcome: 45 },
-                    { month: 'Oct', usage: 61, outcome: 54 },
-                    { month: 'Nov', usage: 55, outcome: 50 },
-                    { month: 'Dec', usage: 72, outcome: 68 }
+                    { month: 'Jul 2025', usage: 45, outcome: 38 },
+                    { month: 'Aug 2025', usage: 52, outcome: 42 },
+                    { month: 'Sep 2025', usage: 48, outcome: 45 },
+                    { month: 'Oct 2025', usage: 61, outcome: 54 },
+                    { month: 'Nov 2025', usage: 55, outcome: 50 },
+                    { month: 'Dec 2025', usage: 72, outcome: 68 }
                 ],
                 stressTestData: [
                     { scenario: 'Baseline', coverage: 85, impact: 12 },

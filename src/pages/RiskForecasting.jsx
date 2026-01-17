@@ -7,10 +7,11 @@ import {
     TrendingUp, Activity, AlertCircle, Zap, ShieldAlert, ArrowRight,
     ChevronRight, Info, AlertTriangle, CheckCircle2, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
+import { CHART_CONFIG } from '../chartConfig';
 
 const KPICard = ({ label, value, trend, up }) => (
     <div className="card">
-        <div className="kpi-label">{label}</div>
+        <div className="kpi-label" title={label}>{label}</div>
         <div className="kpi-value">{value}</div>
         <div className={`kpi-trend ${up === null ? '' : up ? 'trend-up' : 'trend-down'}`}>
             {up === true && <ArrowUpRight size={12} />}
@@ -38,24 +39,31 @@ const RiskTransitionMatrix = ({ data }) => {
         return item ? item.value : 0;
     };
 
-    const getBG = (v) => {
+    const getBG = (v, from, to) => {
         if (v === 0) return 'transparent';
-        if (v > 80) return 'rgba(16, 185, 129, 0.2)';
-        if (v > 40) return 'rgba(59, 130, 246, 0.15)';
-        if (v > 15) return 'rgba(245, 158, 11, 0.15)';
-        return 'rgba(239, 68, 68, 0.1)';
+        const buckets = ['Current', '30-60', '60-90', '90+'];
+        const fromIdx = buckets.indexOf(from);
+        const toIdx = buckets.indexOf(to);
+
+        if (toIdx < fromIdx) return `rgba(16, 185, 129, ${v / 100})`; // Recovery (Green)
+        if (toIdx > fromIdx) return `rgba(239, 68, 68, ${v / 100})`; // Deterioration (Red)
+        return `rgba(99, 102, 241, ${v / 100})`; // Stability (Indigo)
     };
 
-    const getColor = (v) => {
-        if (v > 80) return '#10b981';
-        if (v > 40) return '#3b82f6';
-        if (v > 15) return '#f59e0b';
-        return '#ef4444';
+    const getColor = (v, from, to) => {
+        if (v > 50) return '#ffffff'; // High contrast for dark backgrounds
+        const buckets = ['Current', '30-60', '60-90', '90+'];
+        const fromIdx = buckets.indexOf(from);
+        const toIdx = buckets.indexOf(to);
+
+        if (toIdx < fromIdx) return '#10b981';
+        if (toIdx > fromIdx) return '#ef4444';
+        return '#6366f1';
     };
 
     return (
-        <div style={{ padding: '10px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: `100px repeat(${buckets.length}, 1fr)`, gap: '4px' }}>
+        <div style={{ padding: '10px', overflowX: 'auto' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: `100px repeat(${buckets.length}, 1fr)`, gap: '4px', minWidth: '400px' }}>
                 <div />
                 {buckets.map(b => (
                     <div key={b} style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, paddingBottom: '8px' }}>To: {b}</div>
@@ -67,16 +75,16 @@ const RiskTransitionMatrix = ({ data }) => {
                             const val = getValue(from, to);
                             return (
                                 <div key={`${from}-${to}`} style={{
-                                    background: getBG(val),
+                                    background: getBG(val, from, to),
                                     height: '50px',
                                     borderRadius: '6px',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    border: val > 0 ? `1px solid ${getColor(val)}33` : '1px dashed var(--border)'
+                                    border: val > 0 ? `1px solid ${getColor(val, from, to)}33` : '1px dashed var(--border)'
                                 }}>
-                                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: getColor(val) }}>{val > 0 ? `${val}%` : '-'}</span>
+                                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: getColor(val, from, to) }}>{val > 0 ? `${val}%` : '-'}</span>
                                 </div>
                             );
                         })}
@@ -161,7 +169,7 @@ const RiskForecasting = ({ data }) => {
                 </div>
             </div>
 
-            <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}>
+            <div className="kpi-grid">
                 {kpis.map((kpi, i) => (
                     <KPICard key={i} {...kpi} />
                 ))}
@@ -175,16 +183,23 @@ const RiskForecasting = ({ data }) => {
                                 <div style={{ width: 8, height: 8, borderRadius: '2px', background: 'var(--primary)' }} /> Historical
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                                <div style={{ width: 8, height: 8, borderRadius: '2px', background: 'rgba(59, 130, 246, 0.3)', border: '1px dashed #3b82f6' }} /> Projected
+                                <div style={{ width: 8, height: 8, borderRadius: '2px', background: 'white', border: '2px solid #f97316' }} /> Projected
                             </div>
                         </div>
                     } />
                     <div style={{ height: 350 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart data={delinquencyForecast}>
+                            <ComposedChart
+                                data={delinquencyForecast.map((d, i, arr) => ({
+                                    ...d,
+                                    hRate: d.type === 'Historical' ? d.rate : null,
+                                    pRate: d.type === 'Projected' || (d.type === 'Historical' && arr[i + 1]?.type === 'Projected') ? d.rate : null
+                                }))}
+                                margin={{ top: 20, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom, left: CHART_CONFIG.marginLeft }}
+                            >
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} unit="%" />
+                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} label={{ value: 'Timeline', ...CHART_CONFIG.xLabel }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} width={CHART_CONFIG.yAxisWidth} unit="%" label={{ value: 'Expected Delinquency (%)', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
                                 />
@@ -203,17 +218,22 @@ const RiskForecasting = ({ data }) => {
                                 </defs>
                                 <Line
                                     type="monotone"
-                                    dataKey="rate"
+                                    dataKey="hRate"
                                     stroke="var(--primary)"
                                     strokeWidth={3}
-                                    dot={(props) => {
-                                        const { cx, cy, payload } = props;
-                                        if (payload.type === 'Historical') return <circle cx={cx} cy={cy} r={4} fill="var(--primary)" />;
-                                        return <circle cx={cx} cy={cy} r={4} fill="white" stroke="var(--primary)" strokeWidth={2} strokeDasharray="2 2" />;
-                                    }}
-                                    strokeDasharray={(payload) => payload.type === 'Projected' ? '5 5' : '0'}
+                                    dot={{ r: 4, fill: 'var(--primary)' }}
                                 >
-                                    <LabelList dataKey="rate" position="top" formatter={(v) => `${v}%`} style={{ fontSize: '10px', fontWeight: 600, fill: 'var(--text-main)' }} />
+                                    <LabelList dataKey="hRate" position="top" formatter={(v) => v ? `${v}%` : ''} style={{ fontSize: '10px', fontWeight: 600, fill: 'var(--text-main)' }} />
+                                </Line>
+                                <Line
+                                    type="monotone"
+                                    dataKey="pRate"
+                                    stroke="#f97316"
+                                    strokeWidth={3}
+                                    strokeDasharray="5 5"
+                                    dot={{ r: 4, fill: 'white', stroke: '#f97316', strokeWidth: 2 }}
+                                >
+                                    <LabelList dataKey="pRate" position="top" formatter={(v) => v ? `${v}%` : ''} style={{ fontSize: '10px', fontWeight: 600, fill: '#f97316' }} />
                                 </Line>
                             </ComposedChart>
                         </ResponsiveContainer>
@@ -228,13 +248,13 @@ const RiskForecasting = ({ data }) => {
                     <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: '12px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                         <div style={{ display: 'flex', gap: '1.5rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <div style={{ width: 12, height: 12, borderRadius: '2px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981' }} /> Stability
+                                <div style={{ width: 12, height: 12, borderRadius: '2px', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid #6366f1' }} /> Stability
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <div style={{ width: 12, height: 12, borderRadius: '2px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444' }} /> Deterioration
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <div style={{ width: 12, height: 12, borderRadius: '2px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6' }} /> Recovery
+                                <div style={{ width: 12, height: 12, borderRadius: '2px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981' }} /> Recovery
                             </div>
                         </div>
                     </div>
@@ -244,10 +264,10 @@ const RiskForecasting = ({ data }) => {
                     <SectionHeader title="Early Warning Signals" icon={Zap} />
                     <div style={{ height: 320 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={earlyWarningSignals} layout="vertical">
+                            <BarChart data={earlyWarningSignals} layout="vertical" margin={{ left: CHART_CONFIG.marginLeft, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
-                                <XAxis type="number" hide />
-                                <YAxis dataKey="signal" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--text-main)', fontWeight: 600 }} width={120} />
+                                <XAxis type="number" fontSize={10} label={{ value: 'Signal Count', ...CHART_CONFIG.xLabel }} />
+                                <YAxis dataKey="signal" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--text-main)', fontWeight: 600 }} width={120} label={{ value: 'Risk Indicator', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
                                 <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                                     {earlyWarningSignals.map((entry, index) => (
@@ -273,6 +293,7 @@ const RiskForecasting = ({ data }) => {
                                     dataKey="value"
                                 >
                                     <LabelList position="right" fill="var(--text-muted)" stroke="none" dataKey="label" fontSize={10} />
+                                    <Legend verticalAlign="top" align="right" payload={[{ value: 'Filter', type: 'rect', color: '#3b82f6' }, { value: 'Early Alert', type: 'rect', color: '#8b5cf6' }, { value: 'Warning', type: 'rect', color: '#f59e0b' }, { value: 'Serious', type: 'rect', color: '#ef4444' }]} />
                                     {riskFunnelData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={['#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'][index]} />
                                     ))}
@@ -286,10 +307,10 @@ const RiskForecasting = ({ data }) => {
                     <SectionHeader title="Loan Risk Score Distribution" icon={ShieldAlert} />
                     <div style={{ height: 300 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={riskScoreBuckets}>
+                            <BarChart data={riskScoreBuckets} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                                <XAxis dataKey="bucket" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+                                <XAxis dataKey="bucket" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} label={{ value: 'Risk Score Range', ...CHART_CONFIG.xLabel }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Loan Count', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
                                 <Bar dataKey="count" fill="var(--primary)" radius={[4, 4, 0, 0]}>
                                     {riskScoreBuckets.map((entry, index) => (

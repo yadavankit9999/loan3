@@ -18,6 +18,7 @@ import {
     BarChart2, ShieldAlert,
     CheckCircle2, Info, AlertOctagon
 } from 'lucide-react';
+import { CHART_CONFIG } from '../chartConfig';
 
 const CoachingInsights = ({ data }) => {
     if (!data || !data.coaching) return null;
@@ -56,14 +57,14 @@ const CoachingInsights = ({ data }) => {
             </div>
 
             {/* KPI Row - 7 items as requested */}
-            <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
-                {coaching.kpis.slice(0, 7).map((kpi, i) => (
+            <div className="kpi-grid">
+                {coaching.kpis.map((kpi, i) => (
                     <div className="card" key={i} style={{ padding: '1rem' }}>
-                        <div className="kpi-label" style={{ fontSize: '0.7rem' }}>{kpi.label}</div>
-                        <div className="kpi-value" style={{ fontSize: '1.1rem' }}>{kpi.value}</div>
-                        <div className={`kpi-trend ${kpi.up === null ? '' : kpi.up ? 'trend-up' : 'trend-down'}`} style={{ fontSize: '0.7rem' }}>
-                            {kpi.up === true && <ArrowUpRight size={10} />}
-                            {kpi.up === false && <ArrowDownRight size={10} />}
+                        <div className="kpi-label" title={kpi.label}>{kpi.label}</div>
+                        <div className="kpi-value" style={{ fontSize: '1.2rem' }}>{kpi.value}</div>
+                        <div className={`kpi-trend ${kpi.up === null ? '' : kpi.up ? 'trend-up' : 'trend-down'}`} style={{ fontSize: '0.75rem' }}>
+                            {kpi.up === true && <ArrowUpRight size={12} />}
+                            {kpi.up === false && <ArrowDownRight size={12} />}
                             <span>{kpi.trend}</span>
                         </div>
                     </div>
@@ -80,12 +81,12 @@ const CoachingInsights = ({ data }) => {
                     </div>
                     <div style={{ height: 260 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={coaching.stageFunnel}>
+                            <BarChart data={coaching.stageFunnel} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="stage" axisLine={false} tickLine={false} fontSize={10} />
-                                <YAxis hide />
+                                <XAxis dataKey="stage" axisLine={false} tickLine={false} fontSize={10} label={{ value: 'Aging Days', ...CHART_CONFIG.xLabel }} />
+                                <YAxis axisLine={false} tickLine={false} fontSize={10} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Cases', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip />
-                                <Bar dataKey="count" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={30}>
+                                <Bar dataKey="count" name="Delinquent Cases" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={30}>
                                     <LabelList dataKey="count" position="top" style={{ fontSize: '10px', fontWeight: 600 }} />
                                 </Bar>
                             </BarChart>
@@ -101,12 +102,12 @@ const CoachingInsights = ({ data }) => {
                     </div>
                     <div style={{ height: 260 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={coaching.timeToCureDist}>
+                            <BarChart data={coaching.timeToCureDist} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="range" axisLine={false} tickLine={false} fontSize={10} />
-                                <YAxis hide />
+                                <XAxis dataKey="range" axisLine={false} tickLine={false} fontSize={10} label={{ value: 'Days to Cure', ...CHART_CONFIG.xLabel }} />
+                                <YAxis axisLine={false} tickLine={false} fontSize={10} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Case Volume', ...CHART_CONFIG.yLabel }} />
                                 <Tooltip />
-                                <Bar dataKey="count" fill="var(--accent)" radius={[4, 4, 0, 0]} barSize={30}>
+                                <Bar dataKey="count" name="Resolution Volume" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={30}>
                                     <LabelList dataKey="count" position="top" style={{ fontSize: '10px', fontWeight: 600 }} />
                                 </Bar>
                             </BarChart>
@@ -122,16 +123,16 @@ const CoachingInsights = ({ data }) => {
                     </div>
                     <div style={{ height: 260 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={coaching.repeatDelinquency}>
+                            <BarChart data={coaching.repeatDelinquency} margin={{ top: 10, right: 30, left: 0, bottom: 40 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="category" axisLine={false} tickLine={false} fontSize={10} />
-                                <YAxis hide />
+                                <XAxis dataKey="category" axisLine={false} tickLine={false} fontSize={10} label={{ value: 'Delinquency Frequency', position: 'insideBottom', offset: -25, fontSize: 10 }} />
+                                <YAxis axisLine={false} tickLine={false} fontSize={10} hide />
                                 <Tooltip />
-                                <Legend iconType="circle" />
-                                <Bar dataKey="Migrated" fill="var(--danger)" radius={[4, 4, 0, 0]} barSize={20}>
+                                <Legend iconType="circle" verticalAlign="top" align="right" />
+                                <Bar dataKey="Migrated" name="Migrated Cases" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={20}>
                                     <LabelList dataKey="Migrated" position="top" style={{ fontSize: '10px', fontWeight: 600, fill: 'var(--text-main)' }} />
                                 </Bar>
-                                <Bar dataKey="Stable" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={20}>
+                                <Bar dataKey="Stable" name="Stable Cases" fill="var(--secondary)" radius={[4, 4, 0, 0]} barSize={20}>
                                     <LabelList dataKey="Stable" position="top" style={{ fontSize: '10px', fontWeight: 600, fill: 'var(--text-main)' }} />
                                 </Bar>
                             </BarChart>
@@ -150,16 +151,24 @@ const CoachingInsights = ({ data }) => {
                     </div>
                     <div style={{ height: 320 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={coaching.riskHeatmap} layout="vertical" margin={{ left: 20, right: 40 }}>
+                            <BarChart data={coaching.riskHeatmap} layout="vertical" margin={{ left: CHART_CONFIG.marginLeft, right: CHART_CONFIG.marginRight, top: 10, bottom: 10 }}>
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
                                 <XAxis type="number" hide />
                                 <YAxis dataKey="name" type="category" width={80} fontSize={10} axisLine={false} tickLine={false} />
                                 <Tooltip />
                                 <Legend verticalAlign="top" height={36} iconType="circle" />
-                                <Bar dataKey="Speed" stackId="a" fill="#6366f1" radius={[0, 0, 0, 0]} barSize={20} />
-                                <Bar dataKey="Quality" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} barSize={20} />
-                                <Bar dataKey="Consistency" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} barSize={20} />
-                                <Bar dataKey="Compliance" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={20} />
+                                <Bar dataKey="Speed" stackId="a" fill="var(--success)" radius={[0, 0, 0, 0]} barSize={20}>
+                                    <LabelList dataKey="Speed" position="center" style={{ fill: 'white', fontSize: 9, fontWeight: 600 }} />
+                                </Bar>
+                                <Bar dataKey="Quality" stackId="a" fill="var(--primary)" radius={[0, 0, 0, 0]} barSize={20}>
+                                    <LabelList dataKey="Quality" position="center" style={{ fill: 'white', fontSize: 9, fontWeight: 600 }} />
+                                </Bar>
+                                <Bar dataKey="Consistency" stackId="a" fill="var(--warning)" radius={[0, 0, 0, 0]} barSize={20}>
+                                    <LabelList dataKey="Consistency" position="center" style={{ fill: 'white', fontSize: 9, fontWeight: 600 }} />
+                                </Bar>
+                                <Bar dataKey="Compliance" stackId="a" fill="var(--danger)" radius={[0, 4, 4, 0]} barSize={20}>
+                                    <LabelList dataKey="Compliance" position="center" style={{ fill: 'white', fontSize: 9, fontWeight: 600 }} />
+                                </Bar>
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -167,34 +176,51 @@ const CoachingInsights = ({ data }) => {
 
                 {/* Coaching Priority Matrix */}
                 <div className="card chart-card span-4">
-                    <div className="chart-header">
+                    <div className="chart-header" style={{ marginBottom: '0.75rem' }}>
                         <h3 className="chart-title">Priority Matrix</h3>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Risk vs Performance</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Risk vs Performance Quadrants</span>
                     </div>
-                    <div style={{ height: 320 }}>
+
+                    {/* Custom High-Visibility Legend */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'flex-end', padding: '0 1rem', marginBottom: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.65rem', fontWeight: 700, color: '#10b981' }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} /> High Potential
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.65rem', fontWeight: 700, color: '#f59e0b' }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b' }} /> Coaching
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.65rem', fontWeight: 700, color: '#ef4444' }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444' }} /> Critical
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                            <div style={{ width: 10, height: 10, borderRadius: '50%', border: '1.5px solid #94a3b8' }} /> Bubble Size: Account Volume
+                        </div>
+                    </div>
+
+                    <div style={{ height: 280 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <ScatterChart margin={{ top: 20, right: 10, bottom: 0, left: -20 }}>
+                            <ScatterChart margin={{ top: 10, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom + 10, left: CHART_CONFIG.marginLeft }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis type="number" dataKey="x" name="Risk" axisLine={false} tickLine={false} fontSize={10} domain={[0, 60]} />
-                                <YAxis type="number" dataKey="y" name="Perf" axisLine={false} tickLine={false} fontSize={10} domain={[0, 100]} />
+                                <XAxis type="number" dataKey="x" name="Risk" axisLine={false} tickLine={false} fontSize={10} domain={[0, 60]} label={{ value: 'Delinquency Risk Score', ...CHART_CONFIG.xLabel, position: 'bottom', offset: 0 }} />
+                                <YAxis type="number" dataKey="y" name="Perf" axisLine={false} tickLine={false} fontSize={10} width={CHART_CONFIG.yAxisWidth} domain={[0, 100]} label={{ value: 'Cure Performance (%)', ...CHART_CONFIG.yLabel }} />
                                 <ZAxis type="number" dataKey="z" range={[60, 250]} />
                                 <Tooltip cursor={{ strokeDasharray: '3 3' }} />
 
                                 {/* Quadrant Backgrounds */}
-                                <ReferenceArea x1={0} x2={30} y1={50} y2={100} fill="#dcfce7" fillOpacity={0.3} />
-                                <ReferenceArea x1={30} x2={60} y1={50} y2={100} fill="#ffedd5" fillOpacity={0.3} />
-                                <ReferenceArea x1={0} x2={30} y1={0} y2={50} fill="#fee2e2" fillOpacity={0.3} />
-                                <ReferenceArea x1={30} x2={60} y1={0} y2={50} fill="#fecaca" fillOpacity={0.4} />
+                                <ReferenceArea x1={0} x2={30} y1={50} y2={100} fill="var(--success)" fillOpacity={0.05} />
+                                <ReferenceArea x1={30} x2={60} y1={50} y2={100} fill="var(--warning)" fillOpacity={0.05} />
+                                <ReferenceArea x1={0} x2={30} y1={0} y2={50} fill="var(--warning)" fillOpacity={0.05} />
+                                <ReferenceArea x1={30} x2={60} y1={0} y2={50} fill="var(--danger)" fillOpacity={0.05} />
 
                                 <ReferenceLine x={30} stroke="#94a3b8" strokeDasharray="3 3" />
                                 <ReferenceLine y={50} stroke="#94a3b8" strokeDasharray="3 3" />
 
-                                <Scatter name="Associates" data={coaching.priorityMatrix.slice(0, 15)}>
+                                <Scatter name="Associates" data={coaching.priorityMatrix.slice(0, 15)} legendType="none">
                                     {coaching.priorityMatrix.slice(0, 15).map((entry, index) => {
-                                        let color = 'var(--primary)';
-                                        if (entry.x > 30 && entry.y < 50) color = 'var(--danger)'; // High Risk, Low Perf
-                                        else if (entry.x <= 30 && entry.y >= 50) color = 'var(--success)'; // Low Risk, High Perf
-                                        else color = 'var(--accent)';
+                                        let color = '#6366f1';
+                                        if (entry.x > 30 && entry.y < 50) color = '#ef4444'; // High Risk, Low Perf
+                                        else if (entry.x <= 30 && entry.y >= 50) color = '#10b981'; // Low Risk, High Perf
+                                        else color = '#f59e0b';
                                         return <Cell key={`cell-${index}`} fill={color} />;
                                     })}
                                 </Scatter>
