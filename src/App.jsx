@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard,
   Users,
   BarChart3,
   ShieldAlert,
   HelpingHand,
-  Settings,
   Search,
   Bell,
   ChevronRight,
@@ -37,6 +36,14 @@ const App = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [expandedGroups, setExpandedGroups] = useState(['G1', 'G2', 'G3']);
+  const mainContentRef = useRef(null);
+
+  useEffect(() => {
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTop = 0;
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     getDashboardData().then(res => {
@@ -45,27 +52,53 @@ const App = () => {
     });
   }, []);
 
-  const navItems = [
-    { id: '1A', label: 'Associate Overview', icon: LayoutDashboard },
-    { id: '1B', label: 'Operational Diagnostics', icon: Activity },
-    { id: '1C', label: 'Coaching Insights', icon: ShieldAlert },
-    { id: '2A', label: 'Loan Performance', icon: BarChart3 },
-    { id: '2B', label: 'Risk Segmentation', icon: Target },
-    { id: '2C', label: 'Risk Forecasting', icon: TrendingUp },
-    { id: '3A', label: 'Loss Mitigation', icon: HelpingHand },
-    { id: '3B', label: 'Assistance Effectiveness', icon: PieChart },
-    { id: '3C', label: 'Assistance Strategy', icon: Sliders },
+  const navGroups = [
+    {
+      id: 'G1',
+      title: 'Performance & Ops',
+      items: [
+        { id: '1A', label: 'Associate Overview', icon: LayoutDashboard },
+        { id: '1B', label: 'Operational Diagnostics', icon: Activity },
+        { id: '1C', label: 'Coaching Insights', icon: ShieldAlert },
+      ]
+    },
+    {
+      id: 'G2',
+      title: 'Risk Analysis',
+      items: [
+        { id: '2A', label: 'Loan Performance', icon: BarChart3 },
+        { id: '2B', label: 'Risk Segmentation', icon: Target },
+        { id: '2C', label: 'Risk Forecasting', icon: TrendingUp },
+      ]
+    },
+    {
+      id: 'G3',
+      title: 'Customer Assistance',
+      items: [
+        { id: '3A', label: 'Loss Mitigation', icon: HelpingHand },
+        { id: '3B', label: 'Assistance Effectiveness', icon: PieChart },
+        { id: '3C', label: 'Assistance Strategy', icon: Sliders },
+      ]
+    }
   ];
 
+  const allItems = navGroups.flatMap(g => g.items);
+
   const handleCycle = (direction) => {
-    const currentIndex = navItems.findIndex(item => item.id === activeTab);
+    const currentIndex = allItems.findIndex(item => item.id === activeTab);
     let nextIndex;
     if (direction === 'next') {
-      nextIndex = (currentIndex + 1) % navItems.length;
+      nextIndex = (currentIndex + 1) % allItems.length;
     } else {
-      nextIndex = (currentIndex - 1 + navItems.length) % navItems.length;
+      nextIndex = (currentIndex - 1 + allItems.length) % allItems.length;
     }
-    setActiveTab(navItems[nextIndex].id);
+    setActiveTab(allItems[nextIndex].id);
+  };
+
+  const toggleGroup = (groupId) => {
+    setExpandedGroups(prev =>
+      prev.includes(groupId) ? prev.filter(id => id !== groupId) : [...prev, groupId]
+    );
   };
 
   return (
@@ -77,55 +110,87 @@ const App = () => {
         <ChevronRight size={24} />
       </button>
 
+      <div
+        className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
       <aside className={`sidebar ${!sidebarOpen ? 'collapsed' : ''}`}>
-        <div className="logo-container" style={{ padding: '0.5rem 0' }}>
-          <img src="/logo.webp" alt="Logo" className="logo-img" onError={(e) => e.target.style.display = 'none'} />
-          <h1 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--primary)', letterSpacing: '-0.5px' }}>LoanPulse</h1>
+        <div className="sidebar-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem' }}>
+          <div className="logo-container">
+            <img src="/logo.webp" alt="Logo" className="logo-img" onError={(e) => e.target.style.display = 'none'} />
+            <h1 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary)', letterSpacing: '-0.5px', marginTop: '0.25rem' }}>LoanPulse</h1>
+          </div>
+          <button
+            className="mobile-close-btn"
+            onClick={() => setSidebarOpen(false)}
+            style={{ marginTop: '0.5rem' }}
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="nav-links">
-          {navItems.map(item => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`nav-link ${activeTab === item.id ? 'active' : ''}`}
-            >
-              <item.icon size={20} style={{ minWidth: '20px', flexShrink: 0 }} />
-              <span style={{ transition: 'opacity 0.2s', opacity: sidebarOpen ? 1 : 0, whiteSpace: 'nowrap' }}>{item.label}</span>
-            </button>
+          {navGroups.map(group => (
+            <div key={group.id} className="nav-group">
+              <button
+                className={`nav-group-header ${!sidebarOpen ? 'centered' : ''}`}
+                onClick={() => toggleGroup(group.id)}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <Menu size={14} style={{ opacity: 0.5 }} />
+                  {sidebarOpen && <span className="group-title">{group.title}</span>}
+                </div>
+                {sidebarOpen && (
+                  <ChevronRight
+                    size={14}
+                    style={{
+                      transition: 'transform 0.2s',
+                      transform: expandedGroups.includes(group.id) ? 'rotate(90deg)' : 'none'
+                    }}
+                  />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {expandedGroups.includes(group.id) && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="nav-group-items"
+                  >
+                    {group.items.map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id)}
+                        className={`nav-link sub-link ${activeTab === item.id ? 'active' : ''}`}
+                      >
+                        <item.icon size={18} style={{ minWidth: '18px', flexShrink: 0 }} />
+                        <span style={{ transition: 'opacity 0.2s', opacity: sidebarOpen ? 1 : 0, whiteSpace: 'nowrap' }}>{item.label}</span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           ))}
         </nav>
 
-        <div style={{ marginTop: 'auto', paddingTop: '2rem' }}>
-          <button className="nav-link">
-            <Settings size={18} />
-            <span style={{ opacity: sidebarOpen ? 1 : 0, transition: 'opacity 0.2s' }}>Settings</span>
-          </button>
-        </div>
       </aside>
 
-      <main className="main-content">
+      <main className="main-content" ref={mainContentRef}>
         <header className="header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              style={{
-                background: '#f8fafc',
-                border: '1px solid var(--border)',
-                padding: '0.6rem',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--text-main)',
-                transition: 'all 0.2s'
-              }}
+              className="sidebar-toggle-btn"
             >
-              {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+              <Menu size={18} />
             </button>
             <h2 className="page-title">
-              {navItems.find(n => n.id === activeTab)?.label || 'Dashboard'}
+              {allItems.find(n => n.id === activeTab)?.label || 'Dashboard'}
             </h2>
           </div>
 
