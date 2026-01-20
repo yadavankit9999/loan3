@@ -57,7 +57,7 @@ const App = () => {
       id: 'G1',
       title: 'Performance & Ops',
       items: [
-        { id: '1A', label: 'Associate Overview', icon: LayoutDashboard },
+        { id: '1A', label: 'Associate Performance', icon: LayoutDashboard },
         { id: '1B', label: 'Operational Diagnostics', icon: Activity },
         { id: '1C', label: 'Coaching Insights', icon: ShieldAlert },
       ]
@@ -66,7 +66,7 @@ const App = () => {
       id: 'G2',
       title: 'Risk Analysis',
       items: [
-        { id: '2A', label: 'Loan Performance', icon: BarChart3 },
+        { id: '2A', label: 'Loan Analysis', icon: BarChart3 },
         { id: '2B', label: 'Risk Segmentation', icon: Target },
         { id: '2C', label: 'Risk Forecasting', icon: TrendingUp },
       ]
