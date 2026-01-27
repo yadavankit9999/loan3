@@ -383,6 +383,7 @@ body {
   grid-column: span 4;
 }
 
+.chart-card.span-12,
 .chart-card.full-width {
   grid-column: span 12;
 }

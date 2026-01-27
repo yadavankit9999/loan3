@@ -15,6 +15,7 @@ const OperationalDiagnostics = ({ data }) => {
     const { diagnostics } = data;
     const [filterAssociate, setFilterAssociate] = useState('All');
     const [filterRegion, setFilterRegion] = useState('All');
+    const [snapshotInterval, setSnapshotInterval] = useState('Weekly');
 
     return (
         <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
@@ -52,6 +53,18 @@ const OperationalDiagnostics = ({ data }) => {
                         </select>
                     </div>
                 </div>
+                <div style={{ display: 'flex', gap: '0.75rem', background: 'white', padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+                    <span style={{ fontSize: '0.825rem', fontWeight: 600, color: 'var(--text-muted)' }}>Snapshot Timing:</span>
+                    <select
+                        value={snapshotInterval}
+                        onChange={(e) => setSnapshotInterval(e.target.value)}
+                        style={{ border: 'none', outline: 'none', fontWeight: 700, background: 'transparent', cursor: 'pointer' }}
+                    >
+                        <option value="Monthly (16th)">Monthly (16th)</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Every 5 Days">Every 5 Days</option>
+                    </select>
+                </div>
             </div>
 
             {/* KPI Row - 7 Columns as requested */}
@@ -69,12 +82,13 @@ const OperationalDiagnostics = ({ data }) => {
                 ))}
             </div>
 
-            {/* Row 1: 6 + 6 */}
+            {/* Main Charts Grid */}
             <div className="charts-grid" style={{ marginTop: '1.5rem' }}>
+                {/* Row 1: 6 + 6 */}
                 <div className="card chart-card span-6">
                     <div className="chart-header">
                         <h3 className="chart-title">Migration Volume Trend</h3>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Monthly Reassignment Volume</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Tracking account reassignments over time (executed on the 16th)</span>
                     </div>
                     <div style={{ height: 260 }}>
                         <ResponsiveContainer width="100%" height="100%">
@@ -92,73 +106,10 @@ const OperationalDiagnostics = ({ data }) => {
                 </div>
 
                 <div className="card chart-card span-6">
-                    <div className="chart-header">
-                        <h3 className="chart-title">Migrated vs Non-Migrated</h3>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Status Distribution Comparison</span>
-                    </div>
-                    <div style={{ height: 260 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={diagnostics.groupedComparison} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="status" axisLine={false} tickLine={false} fontSize={12} label={{ value: 'Delinquency Status', ...CHART_CONFIG.xLabel }} />
-                                <YAxis axisLine={false} tickLine={false} fontSize={12} width={CHART_CONFIG.yAxisWidth} hide />
-                                <Tooltip formatter={(val) => `${val} Cases`} />
-                                <Legend iconType="circle" verticalAlign="top" align="right" />
-                                <Bar dataKey="Migrated" name="Migrated Portfolio" fill="var(--primary)" radius={[4, 4, 0, 0]}>
-                                    <LabelList dataKey="Migrated" position="top" style={{ fontSize: '10px', fontWeight: 600, fill: 'var(--text-main)' }} />
-                                </Bar>
-                                <Bar dataKey="Non-Migrated" name="Stable Portfolio" fill="var(--secondary)" radius={[4, 4, 0, 0]}>
-                                    <LabelList dataKey="Non-Migrated" position="top" style={{ fontSize: '10px', fontWeight: 600, fill: 'var(--text-main)' }} />
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-            </div>
-
-            {/* Row 2: 4 + 4 + 4 */}
-            <div className="charts-grid" style={{ marginTop: '1.5rem' }}>
-                <div className="card chart-card span-4">
-                    <div className="chart-header">
-                        <h3 className="chart-title">Migration Outcome Breakdown</h3>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Post-Migration Results</span>
-                    </div>
-                    <div style={{ height: 240 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart
-                                layout="vertical"
-                                data={diagnostics.outcomeBreakdown}
-                                margin={{ top: 10, right: 10, left: 10, bottom: 20 }}
-                            >
-                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                                <XAxis type="number" fontSize={10} axisLine={false} tickLine={false} label={{ value: 'Account Volume', ...CHART_CONFIG.xLabel, offset: -5 }} />
-                                <YAxis
-                                    dataKey="outcome"
-                                    type="category"
-                                    axisLine={false}
-                                    tickLine={false}
-                                    fontSize={10}
-                                    width={100}
-                                />
-                                <Tooltip />
-                                <Bar dataKey="value" name="Account Volume" radius={[0, 4, 4, 0]} barSize={30}>
-                                    {diagnostics.outcomeBreakdown.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                                    ))}
-                                    <LabelList dataKey="value" position="right" style={{ fontSize: '10px', fontWeight: 600, fill: 'var(--text-main)' }} />
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                <div className="card chart-card span-4">
                     <div className="chart-header" style={{ marginBottom: '0.75rem' }}>
-                        <h3 className="chart-title">Workload vs Delinquency</h3>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Staff Efficiency Frontier</span>
+                        <h3 className="chart-title">Workload vs. Delinquency</h3>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Staff Efficiency (Accounts Managed vs. Performance)</span>
                     </div>
-
-                    {/* Custom High-Visibility Legend */}
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', padding: '0 1rem', marginBottom: '0.5rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.65rem', fontWeight: 700, color: '#6366f1' }}>
                             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#6366f1' }} /> Normal
@@ -167,8 +118,7 @@ const OperationalDiagnostics = ({ data }) => {
                             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444' }} /> High Risk (&gt;10%)
                         </div>
                     </div>
-
-                    <div style={{ height: 220 }}>
+                    <div style={{ height: 260 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <ScatterChart margin={{ top: 10, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom + 10, left: CHART_CONFIG.marginLeft }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -185,123 +135,181 @@ const OperationalDiagnostics = ({ data }) => {
                     </div>
                 </div>
 
-                <div className="card chart-card span-4">
-                    <div className="chart-header" style={{ marginBottom: '0.75rem' }}>
-                        <h3 className="chart-title">Stabilization Matrix</h3>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Days since Migration vs Risk</span>
+                {/* Row 2: Weekly Migration Deep-Dive */}
+                <div className="card chart-card span-6">
+                    <div className="chart-header">
+                        <h3 className="chart-title">Migrated vs Non-Migrated ({snapshotInterval})</h3>
+                        <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Transitions across aging categories</span>
                     </div>
-
-                    {/* Custom High-Visibility Legend */}
-                    <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', padding: '0 1rem', marginBottom: '0.5rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.65rem', fontWeight: 700, color: '#10b981' }}>
-                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} /> &lt; 90D
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.65rem', fontWeight: 700, color: '#ef4444' }}>
-                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444' }} /> &gt; 90D
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                            <div style={{ width: 10, height: 10, borderRadius: '50%', border: '1.5px solid #94a3b8' }} /> Bubble Size: Balance
-                        </div>
-                    </div>
-
-                    <div style={{ height: 280 }}>
+                    <div style={{ height: 350 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <ScatterChart margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom + 25 }}>
+                            <BarChart
+                                data={
+                                    snapshotInterval === 'Weekly' ? diagnostics.weeklyBreakdown.migration :
+                                        snapshotInterval === 'Every 5 Days' ? diagnostics.weeklyBreakdown.migration.map((d, i) => ({ ...d, week: `Day ${i * 5 + 1}-${(i + 1) * 5}` })) :
+                                            diagnostics.groupedComparison
+                                }
+                                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                            >
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis
-                                    type="number"
-                                    dataKey="x"
-                                    name="Days Migrated"
-                                    tickLine={false}
-                                    fontSize={10}
-                                    tick={{ dy: 10 }}
-                                    label={{ value: 'Days Since Migration', ...CHART_CONFIG.xLabel, position: 'bottom', offset: 15 }}
-                                />
-                                <YAxis
-                                    type="number"
-                                    dataKey="y"
-                                    name="Delinquency Days"
-                                    tickLine={false}
-                                    fontSize={10}
-                                    width={CHART_CONFIG.yAxisWidth}
-                                    domain={[-5, 130]}
-                                    label={{ value: 'Delinquency Days', ...CHART_CONFIG.yLabel }}
-                                />
-                                <ZAxis type="number" dataKey="z" range={[20, 200]} name="Account Balance" />
+                                <XAxis dataKey={snapshotInterval === 'Monthly (16th)' ? 'status' : 'week'} axisLine={false} tickLine={false} fontSize={12} fontWeight={600} />
+                                <YAxis axisLine={false} tickLine={false} fontSize={12} width={50} />
+                                <Tooltip />
+                                <Legend iconType="circle" verticalAlign="top" align="right" height={36} />
+                                <Bar dataKey="Migrated" fill="var(--primary)" barSize={snapshotInterval === 'Monthly (16th)' ? 60 : 40} radius={[4, 4, 0, 0]}>
+                                    <LabelList dataKey="Migrated" position="top" style={{ fontSize: '11px', fontWeight: 600 }} />
+                                </Bar>
+                                <Bar dataKey="Non-Migrated" fill="var(--secondary)" barSize={snapshotInterval === 'Monthly (16th)' ? 60 : 40} radius={[4, 4, 0, 0]}>
+                                    <LabelList dataKey="Non-Migrated" position="top" style={{ fontSize: '11px', fontWeight: 600 }} />
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                <div className="card chart-card span-6">
+                    <div className="chart-header">
+                        <h3 className="chart-title">Migration Outcome Breakdown ({snapshotInterval})</h3>
+                        <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Cured, Stayed, or Deteriorated</span>
+                    </div>
+                    <div style={{ height: 350 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                                data={
+                                    snapshotInterval === 'Monthly (16th)' ?
+                                        diagnostics.outcomeBreakdown.map(o => ({ key: o.outcome, [o.outcome]: o.value })) :
+                                        snapshotInterval === 'Weekly' ? diagnostics.weeklyBreakdown.outcomes :
+                                            diagnostics.weeklyBreakdown.outcomes.map((d, i) => ({ ...d, week: `Day ${i * 5 + 1}-${(i + 1) * 5}` }))
+                                }
+                                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                            >
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis dataKey={snapshotInterval === 'Monthly (16th)' ? 'key' : 'week'} axisLine={false} tickLine={false} fontSize={12} fontWeight={600} />
+                                <YAxis axisLine={false} tickLine={false} fontSize={12} width={50} />
+                                <Tooltip />
+                                <Legend iconType="circle" verticalAlign="top" align="right" height={36} />
+                                {snapshotInterval === 'Monthly (16th)' ? (
+                                    diagnostics.outcomeBreakdown.map((o) => (
+                                        <Bar key={o.outcome} dataKey={o.outcome} fill={o.fill} radius={[4, 4, 0, 0]} barSize={80}>
+                                            <LabelList dataKey={o.outcome} position="top" style={{ fontSize: '11px', fontWeight: 600 }} />
+                                        </Bar>
+                                    ))
+                                ) : (
+                                    <>
+                                        <Bar dataKey="Cured" fill="var(--success)" stackId="a" barSize={60}>
+                                            <LabelList dataKey="Cured" position="center" style={{ fontSize: '10px', fontWeight: 700, fill: 'white' }} />
+                                        </Bar>
+                                        <Bar dataKey="Stayed" fill="var(--warning)" stackId="a" barSize={60}>
+                                            <LabelList dataKey="Stayed" position="center" style={{ fontSize: '10px', fontWeight: 700, fill: 'white' }} />
+                                        </Bar>
+                                        <Bar dataKey="Deteriorated" fill="var(--danger)" stackId="a" radius={[4, 4, 0, 0]} barSize={60}>
+                                            <LabelList dataKey="Deteriorated" position="top" style={{ fontSize: '10px', fontWeight: 700 }} />
+                                        </Bar>
+                                    </>
+                                )}
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Row 4: Stabilization Matrix */}
+                <div className="card chart-card span-12">
+                    <div className="chart-header">
+                        <h3 className="chart-title">Stabilization & Risk Matrix</h3>
+                        <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Days since Migration vs. Current Delinquency Risk</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', padding: '0 1rem', marginBottom: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 700, color: '#10b981' }}>
+                            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }} /> Stabilized (&lt; 90D)
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 700, color: '#ef4444' }}>
+                            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ef4444' }} /> High Risk (&gt; 90D)
+                        </div>
+                    </div>
+                    <div style={{ height: 350 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <ScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis type="number" dataKey="x" name="Days Migrated" tickLine={false} fontSize={11} label={{ value: 'Days Since Last Migration', position: 'bottom', offset: 20, fontSize: 12, fontWeight: 600 }} />
+                                <YAxis type="number" dataKey="y" name="Delinquency Days" tickLine={false} fontSize={11} width={50} label={{ value: 'Total Delinquency Days', angle: -90, position: 'left', offset: 10, fontSize: 12, fontWeight: 600 }} />
+                                <ZAxis type="number" dataKey="z" range={[50, 400]} name="Balance" />
                                 <Tooltip cursor={{ strokeDasharray: '3 3' }} />
                                 <Scatter data={diagnostics.stabilizationMatrix} legendType="none">
                                     {diagnostics.stabilizationMatrix.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.y > 90 ? '#ef4444' : '#10b981'} fillOpacity={0.7} />
+                                        <Cell key={`cell-${index}`} fill={entry.y > 90 ? '#ef4444' : '#10b981'} fillOpacity={0.6} />
                                     ))}
                                 </Scatter>
                             </ScatterChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
-            </div>
 
-            {/* Bottom: Account Deterioration Flow (Sankey Substitute) */}
-            <div className="card" style={{ marginTop: '1.5rem', padding: '1.5rem' }}>
-                <div className="chart-header" style={{ marginBottom: '2rem' }}>
-                    <h3 className="chart-title">Account Deterioration Flow</h3>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Visualizing the migration of accounts from Current to Delinquent statuses.</p>
-                </div>
+                {/* Row 5: Account Deterioration Flow */}
+                <div className="card chart-card span-12" style={{ padding: '1.5rem' }}>
+                    <div className="chart-header" style={{ marginBottom: '2rem' }}>
+                        <div>
+                            <h3 className="chart-title">Account Deterioration Flow</h3>
+                            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Visualizing the migration of accounts from Current to Delinquent statuses.</p>
+                        </div>
+                    </div>
 
-                <div className="flow-container" style={{ position: 'relative', width: '100%', padding: '0 2rem' }}>
-                    {/* Flow Steps */}
-                    {[
-                        { label: 'Total Portfolio', color: 'var(--secondary)', value: '12,500' },
-                        { label: 'Current', color: 'var(--success)', value: '11,838' },
-                        { label: '30-60 Days', color: 'var(--warning)', value: '352' },
-                        { label: '60-90 Days', color: 'var(--danger)', value: '158' },
-                        { label: '90+ Days', color: '#991b1b', value: '112' },
-                        { label: 'Legal/Loss', color: '#450a0a', value: '40' }
-                    ].map((step, i, arr) => (
-                        <React.Fragment key={i}>
-                            <div style={{ textAlign: 'center', zIndex: 2 }}>
-                                <div style={{
-                                    width: '60px',
-                                    height: '60px',
-                                    borderRadius: '12px',
-                                    background: step.color,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: 'white',
-                                    fontWeight: 700,
-                                    fontSize: '1rem',
-                                    boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                                    marginBottom: '0.5rem'
-                                }}>
-                                    {step.value}
-                                </div>
-                                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)' }}>{step.label}</div>
-                            </div>
-                            {i < arr.length - 1 && (
-                                <div style={{
-                                    flex: 1,
-                                    height: '8px',
-                                    background: `linear-gradient(to right, ${step.color}, ${arr[i + 1].color})`,
-                                    opacity: 0.3,
-                                    borderRadius: '4px',
-                                    margin: '0 -5px',
-                                    marginTop: '-25px',
-                                    position: 'relative'
-                                }}>
+                    <div className="flow-container" style={{ position: 'relative', width: '100%', padding: '0 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {/* Flow Steps */}
+                        {[
+                            { label: 'Total Portfolio', color: 'var(--secondary)', value: '12,500' },
+                            { label: 'Current', color: 'var(--success)', value: '11,838' },
+                            { label: '30-60 Days', color: 'var(--warning)', value: '352' },
+                            { label: '60-90 Days', color: 'var(--danger)', value: '158' },
+                            { label: '90+ Days', color: '#991b1b', value: '112' },
+                            { label: 'Legal/Loss', color: '#450a0a', value: '40' }
+                        ].map((step, i, arr) => (
+                            <React.Fragment key={i}>
+                                <div style={{ textAlign: 'center', zIndex: 2 }}>
                                     <div style={{
-                                        position: 'absolute',
-                                        right: '0',
-                                        top: '50%',
-                                        transform: 'translateY(-50%) rotate(-45deg)',
-                                        width: '10px',
-                                        height: '10px',
-                                        borderRight: `3px solid ${arr[i + 1].color}`,
-                                        borderBottom: `3px solid ${arr[i + 1].color}`
-                                    }}></div>
+                                        width: '60px',
+                                        height: '60px',
+                                        borderRadius: '12px',
+                                        background: step.color,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        fontWeight: 700,
+                                        fontSize: '1rem',
+                                        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                                        marginBottom: '0.5rem'
+                                    }}>
+                                        {step.value}
+                                    </div>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)' }}>{step.label}</div>
                                 </div>
-                            )}
-                        </React.Fragment>
-                    ))}
+                                {i < arr.length - 1 && (
+                                    <div style={{
+                                        flex: 1,
+                                        height: '6px',
+                                        background: `linear-gradient(to right, ${step.color}, ${arr[i + 1].color})`,
+                                        opacity: 0.3,
+                                        borderRadius: '3px',
+                                        margin: '0 -10px',
+                                        marginTop: '-20px',
+                                        position: 'relative'
+                                    }}>
+                                        <div style={{
+                                            position: 'absolute',
+                                            right: '4px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%) rotate(-45deg)',
+                                            width: '8px',
+                                            height: '8px',
+                                            borderRight: `2px solid ${arr[i + 1].color}`,
+                                            borderBottom: `2px solid ${arr[i + 1].color}`,
+                                            opacity: 0.6
+                                        }} />
+                                    </div>
+                                )}
+                            </React.Fragment>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>

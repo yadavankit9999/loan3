@@ -4,6 +4,36 @@ const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'S
 
 const BASE_URL = '/data/';
 
+export const getAssignment = (loanId) => {
+    const lastDigit = parseInt(String(loanId).slice(-1));
+    if (lastDigit <= 2) return 'Collector 1';
+    if (lastDigit <= 5) return 'Collector 2';
+    if (lastDigit <= 7) return 'Collector 3';
+    return 'Collector 4';
+};
+
+const generateTimeSnapshot = (date, loans, associates) => {
+    // Helper to simulate a snapshot at a point in time
+    // In a real app, this would query a historical DB
+    return loans.map(l => {
+        const isAssigned = getAssignment(l.loan_id);
+        const rand = Math.random();
+        // Mocking delinquency status based on risk segment
+        let status = 'Current';
+        if (l.risk_segment === 'High Risk' && rand > 0.6) status = '30-60 Days';
+        if (l.risk_segment === 'High Risk' && rand > 0.8) status = '60-90 Days';
+        if (l.risk_segment === 'High Risk' && rand > 0.9) status = '90+ Days';
+
+        return {
+            ...l,
+            snapshot_date: date.toISOString().split('T')[0],
+            status,
+            assigned_to: isAssigned,
+            cured: status === 'Current' && Math.random() > 0.8 // 20% "cured" flag
+        };
+    });
+};
+
 export const fetchData = async (fileName) => {
     return new Promise((resolve, reject) => {
         Papa.parse(`${BASE_URL}${fileName}`, {
@@ -411,6 +441,37 @@ export const getDashboardData = async () => {
                     { from: '30-60', to: '60-90', value: 180 },
                     { from: '60-90', to: '90+', value: 85 },
                     { from: '90+', to: 'Legal', value: 42 }
+                ],
+                weeklyBreakdown: {
+                    outcomes: [
+                        { week: 'Week 1', Cured: 120, Stayed: 80, Deteriorated: 40 },
+                        { week: 'Week 2', Cured: 140, Stayed: 70, Deteriorated: 30 },
+                        { week: 'Week 3', Cured: 110, Stayed: 90, Deteriorated: 50 },
+                        { week: 'Week 4', Cured: 130, Stayed: 60, Deteriorated: 20 }
+                    ],
+                    migration: [
+                        { week: 'Week 1', Migrated: 85, 'Non-Migrated': 120 },
+                        { week: 'Week 2', Migrated: 92, 'Non-Migrated': 115 },
+                        { week: 'Week 3', Migrated: 78, 'Non-Migrated': 130 },
+                        { week: 'Week 4', Migrated: 105, 'Non-Migrated': 105 }
+                    ]
+                }
+            },
+            associatePerformance: {
+                collectors: ['Collector 1', 'Collector 2', 'Collector 3', 'Collector 4'],
+                performanceData: [
+                    { month: 'Jan', 'Collector 1': { del: 45, cur: 12 }, 'Collector 2': { del: 40, cur: 10 }, 'Collector 3': { del: 38, cur: 15 }, 'Collector 4': { del: 42, cur: 11 } },
+                    { month: 'Feb', 'Collector 1': { del: 42, cur: 15 }, 'Collector 2': { del: 38, cur: 12 }, 'Collector 3': { del: 40, cur: 18 }, 'Collector 4': { del: 45, cur: 14 } },
+                    { month: 'Mar', 'Collector 1': { del: 48, cur: 10 }, 'Collector 2': { del: 42, cur: 15 }, 'Collector 3': { del: 42, cur: 20 }, 'Collector 4': { del: 48, cur: 16 } },
+                    { month: 'Apr', 'Collector 1': { del: 38, cur: 18 }, 'Collector 2': { del: 45, cur: 18 }, 'Collector 3': { del: 45, cur: 22 }, 'Collector 4': { del: 42, cur: 18 } },
+                    { month: 'May', 'Collector 1': { del: 40, cur: 20 }, 'Collector 2': { del: 45, cur: 22 }, 'Collector 3': { del: 48, cur: 25 }, 'Collector 4': { del: 40, cur: 22 } },
+                    { month: 'Jun', 'Collector 1': { del: 44, cur: 14 }, 'Collector 2': { del: 40, cur: 25 }, 'Collector 3': { del: 42, cur: 30 }, 'Collector 4': { del: 35, cur: 25 } },
+                    { month: 'Jul', 'Collector 1': { del: 50, cur: 12 }, 'Collector 2': { del: 48, cur: 28 }, 'Collector 3': { del: 45, cur: 32 }, 'Collector 4': { del: 38, cur: 20 } },
+                    { month: 'Aug', 'Collector 1': { del: 52, cur: 16 }, 'Collector 2': { del: 50, cur: 30 }, 'Collector 3': { del: 48, cur: 35 }, 'Collector 4': { del: 40, cur: 22 } },
+                    { month: 'Sep', 'Collector 1': { del: 46, cur: 22 }, 'Collector 2': { del: 48, cur: 32 }, 'Collector 3': { del: 50, cur: 38 }, 'Collector 4': { del: 44, cur: 25 } },
+                    { month: 'Oct', 'Collector 1': { del: 40, cur: 25 }, 'Collector 2': { del: 46, cur: 35 }, 'Collector 3': { del: 52, cur: 40 }, 'Collector 4': { del: 42, cur: 28 } },
+                    { month: 'Nov', 'Collector 1': { del: 35, cur: 28 }, 'Collector 2': { del: 44, cur: 38 }, 'Collector 3': { del: 48, cur: 42 }, 'Collector 4': { del: 40, cur: 30 } },
+                    { month: 'Dec', 'Collector 1': { del: 30, cur: 32 }, 'Collector 2': { del: 42, cur: 40 }, 'Collector 3': { del: 45, cur: 45 }, 'Collector 4': { del: 38, cur: 35 } }
                 ]
             },
             lossMitigation: {

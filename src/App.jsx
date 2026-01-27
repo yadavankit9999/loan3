@@ -30,6 +30,7 @@ import RiskForecasting from './pages/RiskForecasting';
 import LossMitigation from './pages/LossMitigation';
 import AssistanceEffectiveness from './pages/AssistanceEffectiveness';
 import AssistanceStrategy from './pages/AssistanceStrategy';
+import AssociatePerformance from './pages/AssociatePerformance';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('1A');
@@ -57,9 +58,10 @@ const App = () => {
       id: 'G1',
       title: 'Performance & Ops',
       items: [
-        { id: '1A', label: 'Associate Performance', icon: LayoutDashboard },
+        { id: '1A', label: 'Portfolio Overview', icon: LayoutDashboard },
         { id: '1B', label: 'Operational Diagnostics', icon: Activity },
         { id: '1C', label: 'Coaching Insights', icon: ShieldAlert },
+        { id: '1D', label: 'Associate Performance', icon: Target },
       ]
     },
     {
@@ -232,16 +234,17 @@ const App = () => {
               activeTab === '1A' ? <PortfolioOverview data={data} /> :
                 activeTab === '1B' ? <OperationalDiagnostics data={data} /> :
                   activeTab === '1C' ? <CoachingInsights data={data} /> :
-                    activeTab === '2A' ? <LoanPerformance data={data} /> :
-                      activeTab === '2B' ? <RiskSegmentation data={data} /> :
-                        activeTab === '2C' ? <RiskForecasting data={data} /> :
-                          activeTab === '3A' ? <LossMitigation data={data} /> :
-                            activeTab === '3B' ? <AssistanceEffectiveness data={data} /> :
-                              activeTab === '3C' ? <AssistanceStrategy data={data} /> :
-                                <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                                  <h3 style={{ marginBottom: '1rem' }}>Page {activeTab} Coming Soon</h3>
-                                  <p>We are currently building this section of the dashboard.</p>
-                                </div>
+                    activeTab === '1D' ? <AssociatePerformance data={data} /> :
+                      activeTab === '2A' ? <LoanPerformance data={data} /> :
+                        activeTab === '2B' ? <RiskSegmentation data={data} /> :
+                          activeTab === '2C' ? <RiskForecasting data={data} /> :
+                            activeTab === '3A' ? <LossMitigation data={data} /> :
+                              activeTab === '3B' ? <AssistanceEffectiveness data={data} /> :
+                                activeTab === '3C' ? <AssistanceStrategy data={data} /> :
+                                  <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                    <h3 style={{ marginBottom: '1rem' }}>Page {activeTab} Coming Soon</h3>
+                                    <p>We are currently building this section of the dashboard.</p>
+                                  </div>
             )}
           </motion.div>
         </AnimatePresence>
