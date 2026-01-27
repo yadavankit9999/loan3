@@ -13,13 +13,13 @@ const AssociatePerformance = ({ data }) => {
     if (!data || !data.associatePerformance) return null;
 
     const { associatePerformance } = data;
-    const { performanceData, collectors } = associatePerformance;
+    const { performanceData, Associates } = associatePerformance;
 
     // States for single associate snapshot (Chart A)
-    const [selectedAssociate, setSelectedAssociate] = useState(collectors[0]);
+    const [selectedAssociate, setSelectedAssociate] = useState(Associates[0]);
 
     // States for multi-associate comparison (Chart B)
-    const [selectedComparison, setSelectedComparison] = useState(collectors);
+    const [selectedComparison, setSelectedComparison] = useState(Associates);
 
     // Chart A Data Filtering
     // Mocking specific data for the selected associate based on monthlySnapshots shape
@@ -44,11 +44,11 @@ const AssociatePerformance = ({ data }) => {
         });
     }, [selectedComparison, performanceData]);
 
-    const toggleComparison = (collector) => {
+    const toggleComparison = (Associate) => {
         setSelectedComparison(prev =>
-            prev.includes(collector)
-                ? prev.filter(c => c !== collector)
-                : [...prev, collector]
+            prev.includes(Associate)
+                ? prev.filter(c => c !== Associate)
+                : [...prev, Associate]
         );
     };
 
@@ -93,7 +93,7 @@ const AssociatePerformance = ({ data }) => {
                             onChange={(e) => setSelectedAssociate(e.target.value)}
                             style={{ border: 'none', background: 'transparent', outline: 'none', fontWeight: 700, color: 'var(--text-main)', cursor: 'pointer' }}
                         >
-                            {collectors.map(c => <option key={c} value={c}>{c}</option>)}
+                            {Associates.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
                 </div>
@@ -154,7 +154,7 @@ const AssociatePerformance = ({ data }) => {
                         </div>
                         <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Rolling 6-month window comparative analysis across selected associates</p>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                            {collectors.map((c, i) => (
+                            {Associates.map((c, i) => (
                                 <button
                                     key={c}
                                     onClick={() => toggleComparison(c)}

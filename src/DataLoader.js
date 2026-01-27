@@ -6,10 +6,10 @@ const BASE_URL = '/data/';
 
 export const getAssignment = (loanId) => {
     const lastDigit = parseInt(String(loanId).slice(-1));
-    if (lastDigit <= 2) return 'Collector 1';
-    if (lastDigit <= 5) return 'Collector 2';
-    if (lastDigit <= 7) return 'Collector 3';
-    return 'Collector 4';
+    if (lastDigit <= 2) return 'Associate 1';
+    if (lastDigit <= 5) return 'Associate 2';
+    if (lastDigit <= 7) return 'Associate 3';
+    return 'Associate 4';
 };
 
 const generateTimeSnapshot = (date, loans, associates) => {
@@ -458,20 +458,20 @@ export const getDashboardData = async () => {
                 }
             },
             associatePerformance: {
-                collectors: ['Collector 1', 'Collector 2', 'Collector 3', 'Collector 4'],
+                Associates: ['Associate 1', 'Associate 2', 'Associate 3', 'Associate 4'],
                 performanceData: [
-                    { month: 'Jan', 'Collector 1': { del: 45, cur: 12 }, 'Collector 2': { del: 40, cur: 10 }, 'Collector 3': { del: 38, cur: 15 }, 'Collector 4': { del: 42, cur: 11 } },
-                    { month: 'Feb', 'Collector 1': { del: 42, cur: 15 }, 'Collector 2': { del: 38, cur: 12 }, 'Collector 3': { del: 40, cur: 18 }, 'Collector 4': { del: 45, cur: 14 } },
-                    { month: 'Mar', 'Collector 1': { del: 48, cur: 10 }, 'Collector 2': { del: 42, cur: 15 }, 'Collector 3': { del: 42, cur: 20 }, 'Collector 4': { del: 48, cur: 16 } },
-                    { month: 'Apr', 'Collector 1': { del: 38, cur: 18 }, 'Collector 2': { del: 45, cur: 18 }, 'Collector 3': { del: 45, cur: 22 }, 'Collector 4': { del: 42, cur: 18 } },
-                    { month: 'May', 'Collector 1': { del: 40, cur: 20 }, 'Collector 2': { del: 45, cur: 22 }, 'Collector 3': { del: 48, cur: 25 }, 'Collector 4': { del: 40, cur: 22 } },
-                    { month: 'Jun', 'Collector 1': { del: 44, cur: 14 }, 'Collector 2': { del: 40, cur: 25 }, 'Collector 3': { del: 42, cur: 30 }, 'Collector 4': { del: 35, cur: 25 } },
-                    { month: 'Jul', 'Collector 1': { del: 50, cur: 12 }, 'Collector 2': { del: 48, cur: 28 }, 'Collector 3': { del: 45, cur: 32 }, 'Collector 4': { del: 38, cur: 20 } },
-                    { month: 'Aug', 'Collector 1': { del: 52, cur: 16 }, 'Collector 2': { del: 50, cur: 30 }, 'Collector 3': { del: 48, cur: 35 }, 'Collector 4': { del: 40, cur: 22 } },
-                    { month: 'Sep', 'Collector 1': { del: 46, cur: 22 }, 'Collector 2': { del: 48, cur: 32 }, 'Collector 3': { del: 50, cur: 38 }, 'Collector 4': { del: 44, cur: 25 } },
-                    { month: 'Oct', 'Collector 1': { del: 40, cur: 25 }, 'Collector 2': { del: 46, cur: 35 }, 'Collector 3': { del: 52, cur: 40 }, 'Collector 4': { del: 42, cur: 28 } },
-                    { month: 'Nov', 'Collector 1': { del: 35, cur: 28 }, 'Collector 2': { del: 44, cur: 38 }, 'Collector 3': { del: 48, cur: 42 }, 'Collector 4': { del: 40, cur: 30 } },
-                    { month: 'Dec', 'Collector 1': { del: 30, cur: 32 }, 'Collector 2': { del: 42, cur: 40 }, 'Collector 3': { del: 45, cur: 45 }, 'Collector 4': { del: 38, cur: 35 } }
+                    { month: 'Jan', 'Associate 1': { del: 45, cur: 12 }, 'Associate 2': { del: 40, cur: 10 }, 'Associate 3': { del: 38, cur: 15 }, 'Associate 4': { del: 42, cur: 11 } },
+                    { month: 'Feb', 'Associate 1': { del: 42, cur: 15 }, 'Associate 2': { del: 38, cur: 12 }, 'Associate 3': { del: 40, cur: 18 }, 'Associate 4': { del: 45, cur: 14 } },
+                    { month: 'Mar', 'Associate 1': { del: 48, cur: 10 }, 'Associate 2': { del: 42, cur: 15 }, 'Associate 3': { del: 42, cur: 20 }, 'Associate 4': { del: 48, cur: 16 } },
+                    { month: 'Apr', 'Associate 1': { del: 38, cur: 18 }, 'Associate 2': { del: 45, cur: 18 }, 'Associate 3': { del: 45, cur: 22 }, 'Associate 4': { del: 42, cur: 18 } },
+                    { month: 'May', 'Associate 1': { del: 40, cur: 20 }, 'Associate 2': { del: 45, cur: 22 }, 'Associate 3': { del: 48, cur: 25 }, 'Associate 4': { del: 40, cur: 22 } },
+                    { month: 'Jun', 'Associate 1': { del: 44, cur: 14 }, 'Associate 2': { del: 40, cur: 25 }, 'Associate 3': { del: 42, cur: 30 }, 'Associate 4': { del: 35, cur: 25 } },
+                    { month: 'Jul', 'Associate 1': { del: 50, cur: 12 }, 'Associate 2': { del: 48, cur: 28 }, 'Associate 3': { del: 45, cur: 32 }, 'Associate 4': { del: 38, cur: 20 } },
+                    { month: 'Aug', 'Associate 1': { del: 52, cur: 16 }, 'Associate 2': { del: 50, cur: 30 }, 'Associate 3': { del: 48, cur: 35 }, 'Associate 4': { del: 40, cur: 22 } },
+                    { month: 'Sep', 'Associate 1': { del: 46, cur: 22 }, 'Associate 2': { del: 48, cur: 32 }, 'Associate 3': { del: 50, cur: 38 }, 'Associate 4': { del: 44, cur: 25 } },
+                    { month: 'Oct', 'Associate 1': { del: 40, cur: 25 }, 'Associate 2': { del: 46, cur: 35 }, 'Associate 3': { del: 52, cur: 40 }, 'Associate 4': { del: 42, cur: 28 } },
+                    { month: 'Nov', 'Associate 1': { del: 35, cur: 28 }, 'Associate 2': { del: 44, cur: 38 }, 'Associate 3': { del: 48, cur: 42 }, 'Associate 4': { del: 40, cur: 30 } },
+                    { month: 'Dec', 'Associate 1': { del: 30, cur: 32 }, 'Associate 2': { del: 42, cur: 40 }, 'Associate 3': { del: 45, cur: 45 }, 'Associate 4': { del: 38, cur: 35 } }
                 ]
             },
             lossMitigation: {
