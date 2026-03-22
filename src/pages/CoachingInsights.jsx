@@ -26,9 +26,9 @@ const CoachingInsights = ({ data }) => {
     const [showAlertsOnly, setShowAlertsOnly] = useState(false);
 
     return (
-        <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {/* Header + Alert Toggle */}
-            <div className="section-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Risk, Recovery & Coaching Insights</h2>
                     <p style={{ color: 'var(--text-muted)' }}>Action-centric view for individual performance management and coaching priority.</p>
@@ -56,6 +56,7 @@ const CoachingInsights = ({ data }) => {
                 </button>
             </div>
 
+
             {/* KPI Row - 7 items as requested */}
             <div className="kpi-grid">
                 {coaching.kpis.map((kpi, i) => (
@@ -79,7 +80,7 @@ const CoachingInsights = ({ data }) => {
                         <h3 className="chart-title">Delinquency Funnel</h3>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Accounts by Aging Stage</span>
                     </div>
-                    <div style={{ height: 260 }}>
+                    <div style={{ height: 260, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={coaching.stageFunnel} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -100,7 +101,7 @@ const CoachingInsights = ({ data }) => {
                         <h3 className="chart-title">Time-to-Cure Distribution</h3>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Resolution Speed Frequency</span>
                     </div>
-                    <div style={{ height: 260 }}>
+                    <div style={{ height: 260, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={coaching.timeToCureDist} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -121,7 +122,7 @@ const CoachingInsights = ({ data }) => {
                         <h3 className="chart-title">Repeat Delinquency Analysis</h3>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Recidivism by Tenure Type</span>
                     </div>
-                    <div style={{ height: 260 }}>
+                    <div style={{ height: 260, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={coaching.repeatDelinquency} margin={{ top: 10, right: 30, left: 0, bottom: 40 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -164,7 +165,7 @@ const CoachingInsights = ({ data }) => {
                         </div>
                     </div>
 
-                    <div style={{ height: 320 }}>
+                    <div style={{ height: 320, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={coaching.riskHeatmap} layout="vertical" margin={{ left: CHART_CONFIG.marginLeft, right: CHART_CONFIG.marginRight, top: 10, bottom: 10 }}>
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
@@ -211,7 +212,7 @@ const CoachingInsights = ({ data }) => {
                         </div>
                     </div>
 
-                    <div style={{ height: 280 }}>
+                    <div style={{ height: 280, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <ScatterChart margin={{ top: 10, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom + 10, left: CHART_CONFIG.marginLeft }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

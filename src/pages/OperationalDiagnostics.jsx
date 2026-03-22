@@ -13,45 +13,14 @@ import { CHART_CONFIG } from '../chartConfig';
 const OperationalDiagnostics = ({ data }) => {
     if (!data || !data.diagnostics) return null;
     const { diagnostics } = data;
-    const [filterAssociate, setFilterAssociate] = useState('All');
-    const [filterRegion, setFilterRegion] = useState('All');
     const [snapshotInterval, setSnapshotInterval] = useState('Weekly');
 
     return (
-        <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-            {/* Header + Filters */}
-            <div className="section-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Migration, Workload & Root Cause</h2>
                     <p style={{ color: 'var(--text-muted)' }}>Diagnostic view to isolate the impact of account reassignments and workload stress.</p>
-                </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <div className="filter-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                        <Users size={16} color="var(--text-muted)" />
-                        <select
-                            value={filterAssociate}
-                            onChange={(e) => setFilterAssociate(e.target.value)}
-                            style={{ border: 'none', background: 'none', fontSize: '0.875rem', fontWeight: 500, outline: 'none', cursor: 'pointer' }}
-                        >
-                            <option>All Associates</option>
-                            <option>John Doe</option>
-                            <option>Jane Smith</option>
-                        </select>
-                    </div>
-                    <div className="filter-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                        <Globe size={16} color="var(--text-muted)" />
-                        <select
-                            value={filterRegion}
-                            onChange={(e) => setFilterRegion(e.target.value)}
-                            style={{ border: 'none', background: 'none', fontSize: '0.875rem', fontWeight: 500, outline: 'none', cursor: 'pointer' }}
-                        >
-                            <option>All Regions</option>
-                            <option>North</option>
-                            <option>South</option>
-                            <option>East</option>
-                            <option>West</option>
-                        </select>
-                    </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem', background: 'white', padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
                     <span style={{ fontSize: '0.825rem', fontWeight: 600, color: 'var(--text-muted)' }}>Snapshot Timing:</span>
@@ -66,6 +35,7 @@ const OperationalDiagnostics = ({ data }) => {
                     </select>
                 </div>
             </div>
+
 
             {/* KPI Row - 7 Columns as requested */}
             <div className="kpi-grid">
@@ -90,7 +60,7 @@ const OperationalDiagnostics = ({ data }) => {
                         <h3 className="chart-title">Migration Volume Trend</h3>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Tracking account reassignments over time (executed on the 16th)</span>
                     </div>
-                    <div style={{ height: 260 }}>
+                    <div style={{ height: 260, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={diagnostics.volumeTrend} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -118,7 +88,7 @@ const OperationalDiagnostics = ({ data }) => {
                             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444' }} /> High Risk (&gt;10%)
                         </div>
                     </div>
-                    <div style={{ height: 260 }}>
+                    <div style={{ height: 260, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <ScatterChart margin={{ top: 10, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom + 10, left: CHART_CONFIG.marginLeft }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -141,7 +111,7 @@ const OperationalDiagnostics = ({ data }) => {
                         <h3 className="chart-title">Migrated vs Non-Migrated ({snapshotInterval})</h3>
                         <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Transitions across aging categories</span>
                     </div>
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
                                 data={
@@ -172,7 +142,7 @@ const OperationalDiagnostics = ({ data }) => {
                         <h3 className="chart-title">Migration Outcome Breakdown ({snapshotInterval})</h3>
                         <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Cured, Stayed, or Deteriorated</span>
                     </div>
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
                                 data={
@@ -226,7 +196,7 @@ const OperationalDiagnostics = ({ data }) => {
                             <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ef4444' }} /> High Risk (&gt; 90D)
                         </div>
                     </div>
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <ScatterChart margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

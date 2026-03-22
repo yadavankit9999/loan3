@@ -13,27 +13,26 @@ import { ArrowUpRight, ArrowDownRight, Minus, TrendingUp, Users, FileText } from
 import { CHART_CONFIG } from '../chartConfig';
 
 const PortfolioOverview = ({ data }) => {
+    if (!data || !data.portfolio) return null;
     const { kpis, raw } = data;
+    const { totalVolume, totalAccounts, weightedFico, avgLtv, delinquencyRate, suspenseTotal } = data.portfolio;
 
     // Process data for charts
     const associateStats = useMemo(() => {
-        if (!raw) return [];
+        if (!raw || !data.associatePerformance || !data.associatePerformance.performanceStats) return [];
 
-        return raw.associates.map(assoc => {
-            const assocAccounts = raw.accounts.filter(a => a.associate_id === assoc.associate_id);
-            const total = assocAccounts.length;
-            const delinquent = assocAccounts.filter(a => a.days_delinquent > 0).length;
-            const cured = assocAccounts.filter(a => a.cured_flag === 1).length;
-
-            return {
-                name: assoc.associate_name,
-                accounts: total,
-                delinquencyRate: total > 0 ? ((delinquent / total) * 100).toFixed(1) : 0,
-                cureRate: total > 0 ? ((cured / total) * 100).toFixed(1) : 0,
-                region: assoc.region
-            };
-        }).sort((a, b) => b.delinquencyRate - a.delinquencyRate).slice(0, 10);
-    }, [raw]);
+        return data.associatePerformance.performanceStats
+            .map(perf => ({
+                name: perf.name,
+                region: perf.region,
+                accounts: perf.account_count,
+                delinquencyRate: parseFloat(perf.delinq_rate),
+                volume: perf.volume,
+                cureRate: parseFloat(perf.cure_rate || 0)
+            }))
+            .sort((a, b) => b.delinquencyRate - a.delinquencyRate)
+            .slice(0, 10);
+    }, [raw, data.associatePerformance]);
 
     const trendData = useMemo(() => [
         { month: 'Jul 2025', delinquency: 12, cures: 8 },
@@ -45,23 +44,14 @@ const PortfolioOverview = ({ data }) => {
     ], []);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {/* Header with Selector */}
-            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '-0.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="section-header">
                 <div>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Portfolio Overview</h2>
                     <p style={{ color: 'var(--text-muted)' }}>High-level executive summary of portfolio health and key performance metrics.</p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'white', padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
-                    <span style={{ fontSize: '0.825rem', fontWeight: 600, color: 'var(--text-muted)' }}>Reporting Period:</span>
-                    <select style={{ border: 'none', outline: 'none', fontWeight: 700, background: 'transparent', cursor: 'pointer' }}>
-                        <option>Last 30 Days</option>
-                        <option>Q4 2025</option>
-                        <option>Q3 2025</option>
-                        <option>Full Year 2025</option>
-                    </select>
-                </div>
             </div>
+
 
             {/* KPI Cards */}
             <div className="kpi-grid">
@@ -85,7 +75,7 @@ const PortfolioOverview = ({ data }) => {
                         <h3 className="chart-title">Associate Delinquency Comparison</h3>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Comparative Risk</span>
                     </div>
-                    <div style={{ height: 280 }}>
+                    <div style={{ height: 280, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={associateStats} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -108,7 +98,7 @@ const PortfolioOverview = ({ data }) => {
                         <h3 className="chart-title">Associate Cure Rate</h3>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Recovery Performance</span>
                     </div>
-                    <div style={{ height: 280 }}>
+                    <div style={{ height: 280, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={[...associateStats].sort((a, b) => b.cureRate - a.cureRate)} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -134,7 +124,7 @@ const PortfolioOverview = ({ data }) => {
                         <h3 className="chart-title">Delinquency vs Cures Trend</h3>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Efficiency Trend</span>
                     </div>
-                    <div style={{ height: 280 }}>
+                    <div style={{ height: 280, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={trendData} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom + 20 }}>
                                 <defs>

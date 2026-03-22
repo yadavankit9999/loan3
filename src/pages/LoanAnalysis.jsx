@@ -29,16 +29,17 @@ const SectionHeader = ({ title }) => (
     </div>
 );
 
-const LoanPerformance = ({ data }) => {
+const LoanAnalysis = ({ data }) => {
     if (!data || !data.performance) return null;
     const { kpis, delinquencyTrend, statusDistribution, valueVsRisk, scoreBuckets, riskSegments } = data.performance;
 
     return (
-        <div style={{ padding: '0 1rem', animation: 'fadeIn 0.5s ease-out' }}>
-            <div className="section-header" style={{ marginBottom: '1.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Loan Performance Trends</h2>
-                <p style={{ color: 'var(--text-muted)' }}>Detailed analysis of portfolio health, delinquency movements, and risk exposure.</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', animation: 'fadeIn 0.5s ease-out' }}>
+            <div className="section-header">
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Loan Analysis & Risk Profiles</h2>
+                <p style={{ color: 'var(--text-muted)' }}>Detailed analysis of portfolio health, FICO/LTV distributions, and risk exposure.</p>
             </div>
+
 
             <div className="kpi-grid">
                 {kpis.map((kpi, i) => (
@@ -49,7 +50,7 @@ const LoanPerformance = ({ data }) => {
             <div className="charts-grid" style={{ marginBottom: '1.5rem' }}>
                 <div className="chart-card span-6">
                     <SectionHeader title="Portfolio Delinquency Trend" />
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={delinquencyTrend} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
@@ -75,7 +76,7 @@ const LoanPerformance = ({ data }) => {
 
                 <div className="chart-card span-6">
                     <SectionHeader title="Loan Status Distribution" />
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
@@ -105,7 +106,7 @@ const LoanPerformance = ({ data }) => {
             <div className="charts-grid" style={{ marginBottom: '1.5rem' }}>
                 <div className="chart-card span-6">
                     <SectionHeader title="Portfolio Value vs Risk by Region" />
-                    <div style={{ height: 320 }}>
+                    <div style={{ height: 320, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <ComposedChart data={valueVsRisk} margin={{ top: 10, right: CHART_CONFIG.marginRight + 20, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
@@ -115,7 +116,7 @@ const LoanPerformance = ({ data }) => {
                                 <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
                                 <Legend verticalAlign="top" align="right" />
                                 <Bar yAxisId="left" dataKey="value" name="Portfolio Value ($M)" fill="var(--primary)" radius={[4, 4, 0, 0]}>
-                                    <LabelList dataKey="value" position="top" formatter={(v) => `$${v}m`} style={{ fontSize: '10px', fontWeight: 600, fill: 'var(--text-main)' }} />
+                                    <LabelList dataKey="value" position="top" formatter={(v) => `$${v}M`} style={{ fontSize: '10px', fontWeight: 600, fill: 'var(--text-main)' }} />
                                 </Bar>
                                 <Line yAxisId="right" type="monotone" dataKey="riskRate" name="Average Risk %" stroke="#ef4444" strokeWidth={3} dot={{ r: 4, fill: '#ef4444' }}>
                                     <LabelList dataKey="riskRate" position="top" formatter={(v) => `${v}%`} style={{ fontSize: '10px', fontWeight: 600, fill: '#ef4444' }} />
@@ -127,7 +128,7 @@ const LoanPerformance = ({ data }) => {
 
                 <div className="chart-card span-6">
                     <SectionHeader title="Credit Score Distribution (Active Portfolio)" />
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={scoreBuckets} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
@@ -187,4 +188,4 @@ const LoanPerformance = ({ data }) => {
     );
 };
 
-export default LoanPerformance;
+export default LoanAnalysis;

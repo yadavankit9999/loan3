@@ -15,30 +15,14 @@ const AssistanceEffectiveness = ({ data }) => {
     const { effectiveness } = data;
 
     return (
-        <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-
-            <div className="section-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', animation: 'fadeIn 0.5s ease-out' }}>
+            <div className="section-header">
                 <div>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Assistance Effectiveness Diagnostics</h2>
                     <p style={{ color: 'var(--text-muted)' }}>Comparative analysis of program success rates, re-default patterns, and outcome funnels.</p>
                 </div>
-                <button style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    padding: '0.6rem 1rem',
-                    background: 'white',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    color: 'var(--text-main)'
-                }}>
-                    <Settings2 size={16} />
-                    <span>Program Selector</span>
-                </button>
             </div>
+
 
             {/* KPI Row - 7 items as per wireframe */}
             <div className="kpi-grid">
@@ -61,7 +45,7 @@ const AssistanceEffectiveness = ({ data }) => {
                     <div className="chart-header">
                         <h3 className="chart-title">Cure Rate by Program</h3>
                     </div>
-                    <div style={{ height: 300 }}>
+                    <div style={{ height: 300, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={effectiveness.cureRateByProgram} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -81,7 +65,7 @@ const AssistanceEffectiveness = ({ data }) => {
                     <div className="chart-header">
                         <h3 className="chart-title">Re-default Rate by Program</h3>
                     </div>
-                    <div style={{ height: 300 }}>
+                    <div style={{ height: 300, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={effectiveness.reDefaultRateByProgram} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -102,7 +86,7 @@ const AssistanceEffectiveness = ({ data }) => {
                     <div className="chart-header">
                         <h3 className="chart-title">Outcome Funnel</h3>
                     </div>
-                    <div style={{ height: 300 }}>
+                    <div style={{ height: 300, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <FunnelChart margin={{ right: 80 }}>
                                 <Tooltip />
@@ -133,9 +117,9 @@ const AssistanceEffectiveness = ({ data }) => {
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', padding: '0 1rem', marginBottom: '0.5rem' }}>
                     </div>
 
-                    <div style={{ height: 280 }}>
+                    <div style={{ height: 400, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <ScatterChart margin={{ top: 10, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom + 10, left: CHART_CONFIG.marginLeft }}>
+                            <ScatterChart margin={{ top: 60, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom + 10, left: CHART_CONFIG.marginLeft }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                 <XAxis type="number" dataKey="x" name="Risk Score" axisLine={false} tickLine={false} fontSize={10} label={{ value: 'Pre-Program Risk Score', ...CHART_CONFIG.xLabel, position: 'bottom', offset: 0 }} />
                                 <YAxis type="number" dataKey="y" name="Success Rate" unit="%" axisLine={false} tickLine={false} fontSize={10} width={CHART_CONFIG.yAxisWidth} label={{ value: 'Resolution Success (%)', ...CHART_CONFIG.yLabel }} />
@@ -157,7 +141,7 @@ const AssistanceEffectiveness = ({ data }) => {
                     <div className="chart-header">
                         <h3 className="chart-title">Assistance Frequency</h3>
                     </div>
-                    <div style={{ height: 300 }}>
+                    <div style={{ height: 300, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={effectiveness.assistanceFrequency} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

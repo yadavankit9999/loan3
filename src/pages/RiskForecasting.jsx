@@ -8,6 +8,7 @@ import {
     ChevronRight, Info, AlertTriangle, CheckCircle2, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
 import { CHART_CONFIG } from '../chartConfig';
+import HighLevelFilters from '../components/HighLevelFilters';
 
 const KPICard = ({ label, value, trend, up }) => (
     <div className="card">
@@ -98,43 +99,108 @@ const RiskTransitionMatrix = ({ data }) => {
 const DecisionInsightCard = ({ item }) => {
     const isCritical = item.type === 'critical';
     const isWarning = item.type === 'warning';
+    const accentColor = isCritical ? '#ef4444' : isWarning ? '#f59e0b' : '#3b82f6';
+    const bgColor = isCritical ? 'rgba(239, 68, 68, 0.04)' : isWarning ? 'rgba(245, 158, 11, 0.04)' : 'rgba(59, 130, 246, 0.04)';
 
     return (
         <div style={{
-            padding: '1.25rem',
-            borderRadius: '12px',
-            background: isCritical ? 'rgba(239, 68, 68, 0.03)' : isWarning ? 'rgba(245, 158, 11, 0.03)' : 'rgba(59, 130, 246, 0.03)',
-            borderLeft: `4px solid ${isCritical ? '#ef4444' : isWarning ? '#f59e0b' : '#3b82f6'}`,
-            marginBottom: '1rem',
+            padding: '1rem 1.25rem',
+            borderRadius: '16px',
+            background: 'white',
+            border: '1px solid var(--border)',
+            marginBottom: '0.75rem',
             display: 'flex',
-            gap: '1rem'
-        }}>
-            <div style={{ color: isCritical ? '#ef4444' : isWarning ? '#f59e0b' : '#3b82f6' }}>
+            gap: '1.25rem',
+            alignItems: 'flex-start',
+            transition: 'all 0.2s ease',
+            cursor: 'pointer',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+            position: 'relative',
+            overflow: 'hidden'
+        }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.04)';
+                e.currentTarget.style.borderColor = accentColor;
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.02)';
+                e.currentTarget.style.borderColor = 'var(--border)';
+            }}
+        >
+            {/* Left accent bar */}
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', background: accentColor }} />
+
+            <div style={{
+                width: 40,
+                height: 40,
+                borderRadius: '10px',
+                background: bgColor,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: accentColor,
+                flexShrink: 0
+            }}>
                 {isCritical ? <ShieldAlert size={20} /> : isWarning ? <AlertTriangle size={20} /> : <Info size={20} />}
             </div>
-            <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: isCritical ? '#ef4444' : isWarning ? '#f59e0b' : '#3b82f6' }}>
-                        {item.type} Priority
+
+            <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                    <span style={{
+                        fontSize: '0.65rem',
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        padding: '2px 8px',
+                        borderRadius: '20px',
+                        background: bgColor,
+                        color: accentColor
+                    }}>
+                        {item.type}
                     </span>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>Impact: {item.impact}</span>
+                    <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#cbd5e1' }} />
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                        Impact: <span style={{ color: 'var(--text-main)' }}>{item.impact}</span>
+                    </span>
                 </div>
-                <p style={{ fontSize: '0.875rem', color: 'var(--text-main)', margin: 0, lineHeight: 1.5 }}>{item.message}</p>
-                <button style={{
+
+                <p style={{
+                    fontSize: '0.925rem',
+                    fontWeight: 500,
+                    color: 'var(--text-main)',
+                    margin: 0,
+                    lineHeight: 1.5,
+                    letterSpacing: '-0.01em'
+                }}>
+                    {item.message}
+                </p>
+
+                <div style={{
                     marginTop: '0.75rem',
-                    background: 'none',
-                    border: 'none',
-                    color: isCritical ? '#ef4444' : isWarning ? '#f59e0b' : '#3b82f6',
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.25rem',
-                    cursor: 'pointer',
-                    padding: 0
+                    justifyContent: 'space-between'
                 }}>
-                    VIEW MITIGATION PLAN <ChevronRight size={14} />
-                </button>
+                    <button style={{
+                        background: 'none',
+                        border: 'none',
+                        color: accentColor,
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        cursor: 'pointer',
+                        padding: 0,
+                        transition: 'gap 0.2s'
+                    }}
+                        onMouseEnter={(e) => e.currentTarget.style.gap = '0.65rem'}
+                        onMouseLeave={(e) => e.currentTarget.style.gap = '0.4rem'}
+                    >
+                        VIEW MITIGATION PLAN <ChevronRight size={14} />
+                    </button>
+                    <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>Ref: L-2940</span>
+                </div>
             </div>
         </div>
     );
@@ -147,25 +213,9 @@ const RiskForecasting = ({ data }) => {
     const { kpis, delinquencyForecast, transitionMatrix, earlyWarningSignals, riskFunnelData, riskScoreBuckets, decisionInsights } = data.forecasting;
 
     return (
-        <div style={{ padding: '0 1rem', animation: 'fadeIn 0.5s ease-out' }}>
-            <div className="section-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', animation: 'fadeIn 0.5s ease-out' }}>
+            <div className="section-header">
                 <div>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Risk Forecasting & Transition</h2>
-                    <p style={{ color: 'var(--text-muted)' }}>Forward-looking analytics (ECL, rolling warnings) and status transition probability matrices.</p>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'white', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                    <Activity size={16} color="var(--text-muted)" />
-                    <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Forecast Range:</span>
-                    <select
-                        value={forecastRange}
-                        onChange={(e) => setForecastRange(e.target.value)}
-                        style={{ border: 'none', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)', cursor: 'pointer', outline: 'none' }}
-                    >
-                        <option>30 Days</option>
-                        <option>60 Days</option>
-                        <option>90 Days</option>
-                        <option>180 Days</option>
-                    </select>
                 </div>
             </div>
 
@@ -187,7 +237,7 @@ const RiskForecasting = ({ data }) => {
                             </div>
                         </div>
                     } />
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <ComposedChart
                                 data={delinquencyForecast.map((d, i, arr) => ({
@@ -262,7 +312,7 @@ const RiskForecasting = ({ data }) => {
 
                 <div className="chart-card">
                     <SectionHeader title="Early Warning Signals" icon={Zap} />
-                    <div style={{ height: 320 }}>
+                    <div style={{ height: 320, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={earlyWarningSignals} layout="vertical" margin={{ left: CHART_CONFIG.marginLeft, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
@@ -284,7 +334,7 @@ const RiskForecasting = ({ data }) => {
             <div className="charts-grid" style={{ marginBottom: '1.5rem' }}>
                 <div className="chart-card span-4">
                     <SectionHeader title="Risk Funnel" icon={ArrowRight} />
-                    <div style={{ height: 300 }}>
+                    <div style={{ height: 300, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <FunnelChart>
                                 <Tooltip />
@@ -305,7 +355,7 @@ const RiskForecasting = ({ data }) => {
 
                 <div className="chart-card span-8">
                     <SectionHeader title="Loan Risk Score Distribution" icon={ShieldAlert} />
-                    <div style={{ height: 300 }}>
+                    <div style={{ height: 300, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={riskScoreBuckets} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
@@ -331,23 +381,39 @@ const RiskForecasting = ({ data }) => {
                             {decisionInsights.length} NEW ALERTS
                         </div>
                     } />
-                    <div style={{ maxHeight: '280px', overflowY: 'auto', paddingRight: '5px' }}>
+                    <div className="custom-scrollbar" style={{ maxHeight: '350px', overflowY: 'auto', paddingRight: '10px' }}>
                         {decisionInsights.map(item => (
                             <DecisionInsightCard key={item.id} item={item} />
                         ))}
                     </div>
                     <button style={{
                         width: '100%',
-                        padding: '1rem',
-                        background: 'var(--bg-main)',
-                        border: 'none',
-                        borderTop: '1px solid var(--border)',
-                        color: 'var(--primary)',
-                        fontSize: '0.875rem',
+                        padding: '0.875rem',
+                        background: 'transparent',
+                        border: '1px solid var(--border)',
+                        borderRadius: '10px',
+                        color: 'var(--text-main)',
+                        fontSize: '0.8rem',
                         fontWeight: 700,
                         cursor: 'pointer',
-                        marginTop: '0.5rem'
-                    }}>
+                        marginTop: '1.25rem',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem'
+                    }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'var(--bg-main)';
+                            e.currentTarget.style.borderColor = 'var(--primary)';
+                            e.currentTarget.style.color = 'var(--primary)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.borderColor = 'var(--border)';
+                            e.currentTarget.style.color = 'var(--text-main)';
+                        }}
+                    >
                         EXPORT ALL RECOMMENDATIONS
                     </button>
                 </div>

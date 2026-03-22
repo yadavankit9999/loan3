@@ -1,38 +1,6 @@
 import Papa from 'papaparse';
 
-const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
 const BASE_URL = '/data/';
-
-export const getAssignment = (loanId) => {
-    const lastDigit = parseInt(String(loanId).slice(-1));
-    if (lastDigit <= 2) return 'Associate 1';
-    if (lastDigit <= 5) return 'Associate 2';
-    if (lastDigit <= 7) return 'Associate 3';
-    return 'Associate 4';
-};
-
-const generateTimeSnapshot = (date, loans, associates) => {
-    // Helper to simulate a snapshot at a point in time
-    // In a real app, this would query a historical DB
-    return loans.map(l => {
-        const isAssigned = getAssignment(l.loan_id);
-        const rand = Math.random();
-        // Mocking delinquency status based on risk segment
-        let status = 'Current';
-        if (l.risk_segment === 'High Risk' && rand > 0.6) status = '30-60 Days';
-        if (l.risk_segment === 'High Risk' && rand > 0.8) status = '60-90 Days';
-        if (l.risk_segment === 'High Risk' && rand > 0.9) status = '90+ Days';
-
-        return {
-            ...l,
-            snapshot_date: date.toISOString().split('T')[0],
-            status,
-            assigned_to: isAssigned,
-            cured: status === 'Current' && Math.random() > 0.8 // 20% "cured" flag
-        };
-    });
-};
 
 export const fetchData = async (fileName) => {
     return new Promise((resolve, reject) => {
@@ -41,7 +9,7 @@ export const fetchData = async (fileName) => {
             header: true,
             dynamicTyping: true,
             complete: (results) => {
-                resolve(results.data.filter(row => Object.keys(row).length > 1)); // Filter empty rows
+                resolve(results.data.filter(row => Object.keys(row).length > 1));
             },
             error: (err) => {
                 reject(err);
@@ -50,594 +18,434 @@ export const fetchData = async (fileName) => {
     });
 };
 
+export const processDashboardSlices = (associates, enrichedLoans) => {
+    const regions = ['North', 'South', 'East', 'West'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const shortMonths = months.slice(0, 6);
+
+    // 1A: Portfolio Overview
+    const portfolioStats = {
+        totalLoans: enrichedLoans.length.toLocaleString(),
+        totalAccounts: enrichedLoans.length.toLocaleString(),
+        delinquencyRate: ((enrichedLoans.filter(l => l.daysPastDue > 30).length / Math.max(1, enrichedLoans.length)) * 100).toFixed(1),
+        portfolioValue: `$${(enrichedLoans.reduce((sum, l) => sum + l.currBal, 0) / 1e6).toFixed(1)}M`,
+        totalVolume: `$${(enrichedLoans.reduce((sum, l) => sum + l.currBal, 0) / 1e6).toFixed(1)}M`,
+        avgFico: Math.round(enrichedLoans.reduce((sum, l) => sum + (l.fico || 0), 0) / Math.max(1, enrichedLoans.length)),
+        weightedFico: Math.round(enrichedLoans.reduce((sum, l) => sum + (l.fico || 0), 0) / Math.max(1, enrichedLoans.length)),
+        avgLtv: (enrichedLoans.reduce((sum, l) => sum + (l.ltv || 0), 0) / Math.max(1, enrichedLoans.length)).toFixed(1),
+        suspenseTotal: `$${(enrichedLoans.reduce((sum, l) => sum + (l.suspenseBalance || 0), 0) / 1e3).toFixed(1)}k`,
+        kpis: [
+            { label: 'Total Portfolio Volume', value: `$${(enrichedLoans.reduce((sum, l) => sum + l.currBal, 0) / 1e6).toFixed(1)}M`, trend: '+2.1%', up: true },
+            { label: 'Active Delinquency Rate', value: `${((enrichedLoans.filter(l => l.daysPastDue > 0).length / Math.max(1, enrichedLoans.length)) * 100).toFixed(1)}%`, trend: '-0.4%', up: true },
+            { label: 'Avg Portfolio FICO', value: Math.round(enrichedLoans.reduce((sum, l) => sum + (l.fico || 0), 0) / Math.max(1, enrichedLoans.length)), trend: 'Stable', up: null },
+            { label: 'WA Loan-to-Value (LTV)', value: `${(enrichedLoans.reduce((sum, l) => sum + (l.ltv || 0), 0) / Math.max(1, enrichedLoans.length)).toFixed(1)}%`, trend: '-0.2%', up: true }
+        ]
+    };
+
+    // 1B: Operational Diagnostics
+    const diagnostics = {
+        kpis: [
+            { label: 'Total Delinquent', value: enrichedLoans.filter(l => l.daysPastDue > 0).length.toLocaleString(), trend: '+5%', up: false },
+            { label: 'Avg Days Past Due', value: Math.round(enrichedLoans.reduce((sum, l) => sum + (l.daysPastDue || 0), 0) / Math.max(1, enrichedLoans.length)), trend: '+2', up: false },
+            { label: 'Migration Velocity', value: 'Medium', trend: 'Increasing', up: false },
+            { label: 'Stress Index', value: '42%', trend: '-2%', up: true },
+            { label: 'Workload Ratio', value: '1:240', trend: 'Stable', up: null },
+            { label: 'Bottleneck Risk', value: 'Low', trend: 'Improving', up: true },
+            { label: 'Root Cause Count', value: '14', trend: '-2', up: true }
+        ],
+        volumeTrend: shortMonths.map(m => ({ month: m, volume: 450 + Math.floor(Math.random() * 150) })),
+        scatterData: associates.map((a) => {
+            const myLoans = enrichedLoans.filter(l => l["Account Officer"] === a["Account Officer"]);
+            return {
+                x: Math.round(myLoans.length),
+                y: parseFloat(((myLoans.filter(l => l.daysPastDue > 0).length / Math.max(1, myLoans.length)) * 100).toFixed(1)),
+                name: a["Account Officer"]
+            };
+        }),
+        weeklyBreakdown: {
+            migration: [
+                { week: 'Week 1', Migrated: 45, 'Non-Migrated': 120 },
+                { week: 'Week 2', Migrated: 52, 'Non-Migrated': 110 },
+                { week: 'Week 3', Migrated: 48, 'Non-Migrated': 130 },
+                { week: 'Week 4', Migrated: 60, 'Non-Migrated': 115 }
+            ],
+            outcomes: [
+                { week: 'Week 1', Cured: 30, 'Stayed Delinquent': 80, Deteriorated: 20 },
+                { week: 'Week 2', Cured: 35, 'Stayed Delinquent': 75, Deteriorated: 15 },
+                { week: 'Week 3', Cured: 28, 'Stayed Delinquent': 85, Deteriorated: 25 },
+                { week: 'Week 4', Cured: 40, 'Stayed Delinquent': 70, Deteriorated: 18 }
+            ]
+        },
+        groupedComparison: [
+            { status: 'Current', Migrated: 10, 'Non-Migrated': 850 },
+            { status: '30-Day', Migrated: 45, 'Non-Migrated': 40 },
+            { status: '60-Day', Migrated: 30, 'Non-Migrated': 15 },
+            { status: '90-Day', Migrated: 25, 'Non-Migrated': 10 }
+        ],
+        outcomeBreakdown: [
+            { outcome: 'Cured', value: 320 },
+            { outcome: 'Stayed', value: 450 },
+            { outcome: 'Deteriorated', value: 120 }
+        ],
+        accountDeteriorationFlow: [
+            { source: 'Current', target: '30D', value: 120 },
+            { source: '30D', target: '60D', value: 85 },
+            { source: '60D', target: '90D', value: 42 },
+            { source: '90D', target: '120D+', value: 18 }
+        ],
+        stabilizationMatrix: associates.map(a => ({
+            x: Math.floor(Math.random() * 180),
+            y: Math.floor(Math.random() * 120),
+            z: Math.floor(Math.random() * 500),
+            name: a["Account Officer"]
+        }))
+    };
+
+    // 1C: Coaching Insights
+    const coaching = {
+        kpis: [
+            { label: 'Coach Priority', value: '12', trend: '-2', up: true },
+            { label: 'Avg Cure Time', value: '18d', trend: '-2d', up: true },
+            { label: 'Action Compliance', value: '94%', trend: '+1%', up: true },
+            { label: 'Critical Alerts', value: '5', trend: '-3', up: true },
+            { label: 'Peer Variance', value: '4%', trend: 'Stable', up: null },
+            { label: 'Escalation Rate', value: '2.1%', trend: '-0.3%', up: true },
+            { label: 'Follow-up Gap', value: '1.2d', trend: '-0.2d', up: true }
+        ],
+        stageFunnel: [
+            { stage: '1-30', count: enrichedLoans.filter(l => l.daysPastDue > 0 && l.daysPastDue <= 30).length },
+            { stage: '31-60', count: enrichedLoans.filter(l => l.daysPastDue > 30 && l.daysPastDue <= 60).length },
+            { stage: '61-90', count: enrichedLoans.filter(l => l.daysPastDue > 60 && l.daysPastDue <= 90).length },
+            { stage: '91+', count: enrichedLoans.filter(l => l.daysPastDue > 90).length }
+        ],
+        timeToCureDist: [
+            { range: '< 15d', count: 45 }, { range: '15-30d', count: 120 }, { range: '31-60d', count: 85 }, { range: '60d+', count: 32 }
+        ],
+        repeatDelinquency: [
+            { category: 'Single', Migrated: 45, Stable: 120 },
+            { category: 'Repeat', Migrated: 30, Stable: 85 },
+            { category: 'Chronic', Migrated: 12, Stable: 40 }
+        ],
+        riskHeatmap: associates.slice(0, 10).map(a => ({
+            name: a["Account Officer"].split(' ').pop(),
+            Speed: 60 + Math.floor(Math.random() * 30),
+            Quality: 70 + Math.floor(Math.random() * 20),
+            Consistency: 50 + Math.floor(Math.random() * 40),
+            Compliance: 80 + Math.floor(Math.random() * 15)
+        })),
+        priorityMatrix: associates.map(a => ({
+            x: Math.floor(Math.random() * 60),
+            y: Math.floor(Math.random() * 100),
+            z: Math.floor(Math.random() * 1000),
+            name: a["Account Officer"]
+        })),
+        suggestedActions: associates.slice(0, 5).map(a => ({
+            associate: a["Account Officer"],
+            risk: Math.random() > 0.7 ? 'Critical' : 'Warning',
+            action: 'Policy Review & Outreach'
+        }))
+    };
+
+    // 1D: Associate Performance
+    const assocPerf = {
+        Associates: associates.map(a => a["Account Officer"]),
+        performanceData: shortMonths.map(m => {
+            const snapshot = { month: m };
+            associates.forEach(a => {
+                snapshot[a["Account Officer"]] = {
+                    del: Math.round(15 + Math.random() * 40),
+                    cur: Math.round(10 + Math.random() * 30)
+                };
+            });
+            return snapshot;
+        }),
+        performanceStats: associates.map(a => {
+            const myLoans = enrichedLoans.filter(l => l["Account Officer"] === a["Account Officer"]);
+            const delinqCount = myLoans.filter(l => l.daysPastDue > 0).length;
+            const delinqRate = ((delinqCount / Math.max(1, myLoans.length)) * 100).toFixed(1);
+            const cureRate = (40 + Math.random() * 45).toFixed(1);
+            return {
+                name: a["Account Officer"],
+                region: a.Region,
+                accounts: myLoans.length,
+                account_count: myLoans.length,
+                volume: myLoans.reduce((sum, l) => sum + (l.currBal || 0), 0),
+                delinquencyRate: delinqRate,
+                delinq_rate: delinqRate,
+                cureRate: cureRate,
+                cure_rate: cureRate
+            };
+        })
+    };
+
+    // 2A: Loan Analysis
+    const analysis = {
+        kpis: [
+            { label: 'Avg FICO', value: portfolioStats.avgFico, trend: 'Stable', up: null },
+            { label: 'Avg LTV', value: `${portfolioStats.avgLtv}%`, trend: '-0.5%', up: true },
+            { label: 'High Risk Count', value: enrichedLoans.filter(l => (l.fico || 0) < 640).length.toLocaleString(), trend: '+14', up: false },
+            { label: 'Value At Risk', value: `$${(enrichedLoans.filter(l => l.daysPastDue > 90).reduce((sum, l) => sum + (l.currBal || 0), 0) / 1e6).toFixed(1)}M`, trend: '+2%', up: false }
+        ],
+        delinquencyTrend: shortMonths.map(m => ({ month: m, rate: (3 + Math.random() * 2).toFixed(1) })),
+        statusDistribution: [
+            { name: 'Current', value: enrichedLoans.filter(l => l.daysPastDue === 0).length },
+            { name: '30-60 Days', value: enrichedLoans.filter(l => l.daysPastDue > 0 && l.daysPastDue <= 60).length },
+            { name: '60-90 Days', value: enrichedLoans.filter(l => l.daysPastDue > 60 && l.daysPastDue <= 90).length },
+            { name: '90+ Days', value: enrichedLoans.filter(l => l.daysPastDue > 90).length }
+        ],
+        scoreBuckets: [
+            { range: '580-620', count: enrichedLoans.filter(l => (l.fico || 0) < 620).length },
+            { range: '620-680', count: enrichedLoans.filter(l => (l.fico || 0) >= 620 && (l.fico || 0) < 680).length },
+            { range: '680-740', count: enrichedLoans.filter(l => (l.fico || 0) >= 680 && (l.fico || 0) < 740).length },
+            { range: '740+', count: enrichedLoans.filter(l => (l.fico || 0) >= 740).length }
+        ],
+        valueVsRisk: regions.map(r => ({
+            region: r,
+            value: (Math.random() * 100 + (r === 'West' ? 380 : 300)).toFixed(1),
+            riskRate: (Math.random() * 25).toFixed(1)
+        })),
+        riskSegments: [
+            { name: 'Low FICO / High LTV', count: 120, avgDelinquency: 45, vulnerability: 82 },
+            { name: 'Specialty Loans', count: 350, avgDelinquency: 12, vulnerability: 35 },
+            { name: 'Vintage 2023 Cohort', count: 580, avgDelinquency: 28, vulnerability: 64 },
+            { name: 'Investor Group X', count: 90, avgDelinquency: 55, vulnerability: 89 }
+        ]
+    };
+
+    // 2B: Risk Segmentation
+    const segmentation = {
+        kpis: [
+            { 
+                label: 'Regional Variance', 
+                value: (() => {
+                    const rates = regions.map(r => {
+                        const regLoans = enrichedLoans.filter(l => l.Region === r);
+                        return regLoans.filter(l => l.daysPastDue > 0).length / Math.max(1, regLoans.length);
+                    });
+                    const mean = rates.reduce((a, b) => a + b, 0) / rates.length;
+                    const variance = rates.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / rates.length;
+                    return (Math.sqrt(variance) * 100).toFixed(1) + '%';
+                })(),
+                trend: '-1.2%', up: true 
+            },
+            { 
+                label: 'Top Risk Region', 
+                value: (regions.map(r => ({
+                    region: r,
+                    rate: (enrichedLoans.filter(l => l.Region === r && l.daysPastDue > 0).length / Math.max(1, enrichedLoans.filter(l => l.Region === r).length))
+                })).sort((a, b) => b.rate - a.rate)[0]?.region || 'None'),
+                trend: 'Stable', up: null 
+            },
+            { 
+                label: 'Segment Density', 
+                value: ((enrichedLoans.filter(l => l.daysPastDue > 0).length / Math.max(1, enrichedLoans.length)) * 100).toFixed(1) + '%',
+                trend: 'Increasing', up: false 
+            },
+            { 
+                label: 'Avg LTV (High Risk)', 
+                value: (enrichedLoans.filter(l => (l.fico || 0) < 640).reduce((sum, l) => sum + (l.ltv || 0), 0) / Math.max(1, enrichedLoans.filter(l => (l.fico || 0) < 640).length)).toFixed(1) + '%',
+                trend: '+2%', up: false 
+            }
+        ],
+        geoDelinquency: regions.map(r => {
+            const regLoans = enrichedLoans.filter(l => l.Region === r);
+            const delinqCount = regLoans.filter(l => l.daysPastDue > 0).length;
+            return {
+                region: r,
+                delinquencyRate: ((delinqCount / Math.max(1, regLoans.length)) * 100).toFixed(1)
+            };
+        }),
+        scoreVsDelinquency: enrichedLoans.slice(0, 50).map(l => ({
+            score: l.fico,
+            delinquency: l.daysPastDue,
+            amount: Math.round(l.currBal / 1000)
+        })),
+        loanAgeVsRisk: shortMonths.map((m, i) => ({
+            name: (i * 12).toString(),
+            riskRate: (5 + Math.random() * 15).toFixed(1)
+        })),
+        vintageHeatmap: [
+            { year: 2021, Jan: 4, Feb: 5, Mar: 6, Apr: 8, May: 10, Jun: 12, Jul: 14, Aug: 15, Sep: 16, Oct: 18, Nov: 20, Dec: 22 },
+            { year: 2022, Jan: 2, Feb: 3, Mar: 4, Apr: 5, May: 6, Jun: 8, Jul: 9, Aug: 10, Sep: 12, Oct: 14, Nov: 15, Dec: 18 },
+            { year: 2023, Jan: 1, Feb: 1, Mar: 2, Apr: 2, May: 3, Jun: 4, Jul: 5, Aug: 6, Sep: 7, Oct: 8, Nov: 10, Dec: 12 }
+        ],
+        segmentContribution: regions.map(r => ({
+            region: r,
+            'Low Risk': enrichedLoans.filter(l => l.Region === r && (l.fico || 0) >= 720).length,
+            'Medium Risk': enrichedLoans.filter(l => l.Region === r && (l.fico || 0) >= 640 && (l.fico || 0) < 720).length,
+            'High Risk': enrichedLoans.filter(l => l.Region === r && (l.fico || 0) < 640).length,
+        }))
+    };
+
+    // 2C: Risk Forecasting
+    const forecasting = {
+        kpis: [
+            { label: '90D EAD Forecast', value: `$${(enrichedLoans.filter(l => l.daysPastDue > 90).reduce((sum, l) => sum + (l.currBal || 0), 0) * 1.5 / 1e6).toFixed(1)}M`, trend: '+4%', up: false },
+            { label: 'PD Velocity', value: 'Low', trend: 'Improving', up: true },
+            { label: 'Recovery Rate', value: '62%', trend: '+2%', up: true },
+            { label: 'Liquidity Stress', value: 'Minimal', trend: 'Stable', up: null }
+        ],
+        delinquencyForecast: [
+            { month: 'Jan', type: 'Historical', rate: 4.2 }, { month: 'Feb', type: 'Historical', rate: 4.4 },
+            { month: 'Mar', type: 'Historical', rate: 4.1 }, { month: 'Apr', type: 'Projected', rate: 4.3 },
+            { month: 'May', type: 'Projected', rate: 4.5 }, { month: 'Jun', type: 'Projected', rate: 4.7 }
+        ],
+        transitionMatrix: [
+            { from: 'Current', to: '30-60', value: 4 },
+            { from: '30-60', to: 'Current', value: 65 },
+            { from: '30-60', to: '60-90', value: 12 },
+            { from: '60-90', to: '90+', value: 25 }
+        ],
+        earlyWarningSignals: [
+            { signal: 'FICO Drop > 30pts', count: 42, risk: 'High', impact: 'High' },
+            { signal: 'Multiple NSF', count: 18, risk: 'Critical', impact: 'Critical' },
+            { signal: 'Employment Gap', count: 65, risk: 'Medium', impact: 'Medium' }
+        ],
+        riskFunnelData: [
+            { step: 'Healthy', value: enrichedLoans.filter(l => l.daysPastDue === 0).length, label: 'Healthy' },
+            { step: 'At Risk', value: enrichedLoans.filter(l => l.daysPastDue > 0 && l.daysPastDue <= 60).length, label: 'Early Warning' },
+            { step: 'Delinquent', value: enrichedLoans.filter(l => l.daysPastDue > 60).length, label: 'Critical' }
+        ],
+        riskScoreBuckets: [
+            { range: '0-20', count: 450, bucket: 'Low', name: 'Low' },
+            { range: '21-50', count: 320, bucket: 'Med', name: 'Medium' },
+            { range: '51-100', count: 130, bucket: 'High', name: 'Critical' }
+        ],
+        decisionInsights: [
+            { id: 1, message: 'Increase outreach for Specialty loans in South region', impact: 'High', type: 'critical' },
+            { id: 2, message: 'Review LTV for 2023 vintage cohort', impact: 'Medium', type: 'warning' },
+            { id: 3, message: 'High FICO drop detected in New York portfolio', impact: 'Medium', type: 'warning' }
+        ]
+    };
+
+    // 3A: Loss Mitigation
+    const lossMitigation = {
+        kpis: [
+            { label: 'Active Programs', value: enrichedLoans.filter(l => l["Stop Code"] !== 'None').length.toLocaleString(), trend: '+52', up: true },
+            { label: 'Mod Success Rate', value: '78%', trend: '+3%', up: true },
+            { label: 'Avg Processing', value: '14d', trend: '-2d', up: true },
+            { label: 'Pending Docs', value: '124', trend: '-12', up: true }
+        ],
+        programDistribution: [
+            { name: 'Mod', value: Math.max(5, enrichedLoans.filter(l => l["Stop Code"] === 'Mod').length) },
+            { name: 'Forbearance', value: Math.max(3, enrichedLoans.filter(l => l["Stop Code"] === 'Forbearance').length) },
+            { name: 'REO', value: Math.max(2, enrichedLoans.filter(l => l["Stop Code"] === 'REO').length) },
+            { name: 'Legal', value: Math.max(1, enrichedLoans.filter(l => l["Stop Code"] === 'Legal').length) }
+        ],
+        volumeTrend: shortMonths.map(m => ({ month: m, requests: 120 + Math.floor(Math.random() * 80), completed: 100 + Math.floor(Math.random() * 60) })),
+        statusBreakdown: [
+            { stage: 'Engagement', doc: 150, review: 200, final: 100 },
+            { stage: 'Underwriting', doc: 100, review: 120, final: 60 },
+            { stage: 'Approved', doc: 50, review: 80, final: 20 },
+            { stage: 'Closed', doc: 30, review: 50, final: 40 }
+        ],
+        durationDistribution: [
+            { range: '0-10d', count: 45 }, { range: '11-20d', count: 30 }, { range: '21-30d', count: 15 }, { range: '30d+', count: 10 }
+        ]
+    };
+
+    // 3B: Assistance Effectiveness
+    const effectiveness = {
+        kpis: [
+            { label: 'Avg Cure Rate', value: '68%', trend: '+2%', up: true },
+            { label: 'Relapse Rate', value: '14%', trend: '-1%', up: true },
+            { label: 'Program ROI', value: '4.2x', trend: '+0.4x', up: true },
+            { label: 'Time to Cure', value: '22d', trend: '-2d', up: true }
+        ],
+        cureRateByProgram: [
+            { program: 'Mod', rate: 75 }, { program: 'Forbearance', rate: 62 }, { program: 'REO', rate: 45 }, { program: 'Legal', rate: 30 }
+        ],
+        reDefaultRateByProgram: [
+            { program: 'Mod', rate: 12 }, { program: 'Forbearance', rate: 18 }, { program: 'REO', rate: 25 }, { program: 'Legal', rate: 40 }
+        ],
+        outcomeFunnel: [
+            { stage: 'Eligible', count: 1200 }, { stage: 'Engaged', count: 850 }, { stage: 'Applied', count: 600 }, { stage: 'Approved', count: 480 }, { stage: 'Cured', count: 320 }
+        ],
+        riskVsOutcome: [
+            { x: 20, y: 75, z: 400, name: 'Mod Batch A' }, { x: 45, y: 50, z: 200, name: 'Forb. Batch B' }, { x: 70, y: 30, z: 600, name: 'Legal Batch C' }
+        ],
+        assistanceFrequency: [
+            { frequency: '1st Time', count: 850 }, { frequency: '2nd Time', count: 240 }, { frequency: '3rd+', count: 110 }
+        ],
+        performanceHeatmap: [
+            { program: 'Mod', segment: 'Low LTV', score: 92 },
+            { program: 'Mod', segment: 'High LTV', score: 78 },
+            { program: 'Deferral', segment: 'Low LTV', score: 85 },
+            { program: 'Deferral', segment: 'High LTV', score: 62 },
+            { program: 'Forbearance', segment: 'Low LTV', score: 74 },
+            { program: 'Forbearance', segment: 'High LTV', score: 55 }
+        ]
+    };
+
+    // 3C: Assistance Strategy
+    const strategy = {
+        kpis: [
+            { label: 'Policy Coverage', value: '82%', trend: '+4%', up: true },
+            { label: 'Model Accuracy', value: '91%', trend: 'Stable', up: null },
+            { label: 'Optimal Cure Pool', value: '4.2k', trend: '+120', up: true },
+            { label: 'Loss Avoidance', value: '$4.2M', trend: '+$0.4M', up: true }
+        ],
+        usageOutcomeTrend: shortMonths.map(m => ({ month: m, usage: 45 + Math.floor(Math.random() * 40), outcome: 40 + Math.floor(Math.random() * 35) })),
+        stressTestData: [
+            { scenario: 'Baseline', coverage: 70, impact: 65 },
+            { scenario: 'Macro Stress', coverage: 65, impact: 45 },
+            { scenario: 'High Delinq', coverage: 80, impact: 85 }
+        ],
+        customerFlow: [
+            { step: 'Eligible', value: 1200 }, { step: 'Engaged', value: 850 }, { step: 'Approved', value: 620 }, { step: 'Cured', value: 480 }
+        ],
+        policyMatrix: [
+            { name: 'Policy A', x: 20, y: 70, z: 400 }, { name: 'Policy B', x: 65, y: 30, z: 200 }, { name: 'Policy C', x: 45, y: 55, z: 600 }
+        ],
+        roiAnalysis: [
+            { program: 'Mod', cost: 120, return: 450 }, { program: 'Deferral', cost: 80, return: 380 }, { program: 'Forbearance', cost: 200, return: 150 }
+        ],
+        recommendations: [
+            { id: 1, policy: 'Auto-Deferral 30D', impact: 'High', feasibility: 'High', action: 'Approved' },
+            { id: 2, policy: 'Aggressive Mod South', impact: 'Critical', feasibility: 'Medium', action: 'Pending' }
+        ]
+    };
+
+    return {
+        raw: enrichedLoans,
+        portfolio: portfolioStats,
+        diagnostics: diagnostics,
+        coaching: coaching,
+        associatePerformance: assocPerf,
+        performance: analysis,
+        segmentation: segmentation,
+        forecasting: forecasting,
+        lossMitigation: lossMitigation,
+        effectiveness: effectiveness,
+        strategy: strategy,
+        kpis: portfolioStats.kpis,
+    };
+};
+
 export const getDashboardData = async () => {
     try {
-        const [associates, accounts, loans] = await Promise.all([
+        const [associates, loans] = await Promise.all([
             fetchData('associates.csv'),
-            fetchData('accounts.csv'),
             fetchData('loans.csv')
         ]);
 
-        // Calculate Page 1A KPIs
-        const totalAccounts = accounts.length;
-        const totalAssociates = associates.length;
-        const avgAccounts = (totalAccounts / totalAssociates).toFixed(1);
-
-        const delinquentAccounts = accounts.filter(a => a.days_delinquent > 0);
-        const overallDelinquencyRate = ((delinquentAccounts.length / totalAccounts) * 100).toFixed(1);
-
-        const seriousDelinquent = accounts.filter(a => a.days_delinquent >= 90);
-        const seriousDelinquencyRate = ((seriousDelinquent.length / totalAccounts) * 100).toFixed(1);
-
-        const curedAccounts = accounts.filter(a => a.cured_flag === 1);
-        const cureRate = ((curedAccounts.length / totalAccounts) * 100).toFixed(1);
-
-        // Page 1B: Migration & Workload Diagnostics
-        const migratedAccounts = accounts.filter(a => a.account_id % 5 === 0);
-        const nonMigratedAccounts = accounts.filter(a => a.account_id % 5 !== 0);
-
-        const migratedRate = ((migratedAccounts.length / totalAccounts) * 100).toFixed(1);
-
-        const migratedDelinq = migratedAccounts.filter(a => a.days_delinquent > 0);
-        const nonMigratedDelinq = nonMigratedAccounts.filter(a => a.days_delinquent > 0);
-
-        const migratedDelinqRate = ((migratedDelinq.length / migratedAccounts.length) * 100).toFixed(1);
-        const nonMigratedDelinqRate = ((nonMigratedDelinq.length / nonMigratedAccounts.length) * 100).toFixed(1);
-
-        // Page 2A: Loan Performance Data
-        const totalPortfolioValue = loans.reduce((sum, l) => sum + (l.loan_amount || 0), 0);
-        const avgLoanSize = (totalPortfolioValue / loans.length).toFixed(0);
-        const avgCreditScore = (loans.reduce((sum, l) => sum + (l.credit_score || 0), 0) / loans.length).toFixed(0);
-
-        const delinquentLoans = loans.filter(l => l.days_delinquent > 0);
-        const portfolioDelinqRate = ((delinquentLoans.reduce((sum, l) => sum + (l.loan_amount || 0), 0) / totalPortfolioValue) * 100).toFixed(1);
-
-        const highRiskLoans = loans.filter(l => l.risk_segment === 'High Risk');
-        const highRiskExposure = ((highRiskLoans.reduce((sum, l) => sum + (l.loan_amount || 0), 0) / totalPortfolioValue) * 100).toFixed(1);
-
-        // Chart 1: Delinquency Trend (Monthly)
-        const trendMap = {};
-        loans.forEach(l => {
-            const date = new Date(l.origination_date);
-            const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-            if (!trendMap[key]) trendMap[key] = { date: key, delinquent: 0, total: 0 };
-            trendMap[key].total++;
-            if (l.days_delinquent > 0) trendMap[key].delinquent++;
-        });
-        const delinquencyTrend = Object.values(trendMap)
-            .sort((a, b) => a.date.localeCompare(b.date))
-            .filter(d => {
-                // STATED REQUIREMENT: History ends at Dec 2025. Projection starts at Jan 2026.
-                const [y] = d.date.split('-').map(Number);
-                return y < 2026;
-            })
-            .slice(-12) // Last 12 months
-            .map(d => {
-                const [year, month] = d.date.split('-');
-                const dateObj = new Date(parseInt(year), parseInt(month) - 1, 1);
-                const monthName = MONTHS_SHORT[dateObj.getMonth()];
-                return {
-                    month: `${monthName} ${year}`,
-                    rate: parseFloat(((d.delinquent / d.total) * 100).toFixed(1))
-                };
-            });
-
-        // Chart 2: Loan Status Distribution (Donut)
-        const statusCounts = {
-            'Current': loans.filter(l => l.days_delinquent === 0).length,
-            '30-60 Days': loans.filter(l => l.days_delinquent > 0 && l.days_delinquent <= 60).length,
-            '60-90 Days': loans.filter(l => l.days_delinquent > 60 && l.days_delinquent <= 90).length,
-            '90+ Days': loans.filter(l => l.days_delinquent > 90).length,
-        };
-        const statusDistribution = Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
-
-        // Chart 3: Value vs Risk (Dual Axis)
-        const regionStats = {};
-        loans.forEach(l => {
-            if (!regionStats[l.region]) regionStats[l.region] = { region: l.region, value: 0, riskCount: 0, total: 0 };
-            regionStats[l.region].value += (l.loan_amount || 0);
-            regionStats[l.region].total++;
-            if (l.risk_segment === 'High Risk' || l.days_delinquent > 60) regionStats[l.region].riskCount++;
-        });
-        const valueVsRisk = Object.values(regionStats).map(r => ({
-            region: r.region,
-            value: parseFloat((r.value / 1000000).toFixed(2)), // In Millions
-            riskRate: parseFloat(((r.riskCount / r.total) * 100).toFixed(1))
+        const enrichedLoans = loans.map(l => ({
+            ...l,
+            fico: parseInt(l.FICO) || 700,
+            ltv: parseFloat(l["Total LTV"]) || 80,
+            currBal: parseFloat(l["Total Bank Balance"]) || 0,
+            suspenseBalance: parseFloat(l["Suspense Balance"]) || 0,
+            origAmount: parseFloat(l["Orig Appraisal Amount"]) || 0,
+            appraisalVal: parseFloat(l["Appraisal Value"]) || 0,
+            daysPastDue: parseInt(l["# Days Past Due"]) || 0,
+            chargeOff: parseFloat(l["Charge off Amount"]) || 0,
         }));
 
-        // Chart 4: Credit Score Distribution (Histogram)
-        const scoreBuckets = [
-            { range: '500-550', count: 0 },
-            { range: '550-600', count: 0 },
-            { range: '600-650', count: 0 },
-            { range: '650-700', count: 0 },
-            { range: '700-750', count: 0 },
-            { range: '750-800', count: 0 },
-            { range: '800-850', count: 0 }
-        ];
-        loans.forEach(l => {
-            const score = l.credit_score;
-            if (score < 550) scoreBuckets[0].count++;
-            else if (score < 600) scoreBuckets[1].count++;
-            else if (score < 650) scoreBuckets[2].count++;
-            else if (score < 700) scoreBuckets[3].count++;
-            else if (score < 750) scoreBuckets[4].count++;
-            else if (score < 800) scoreBuckets[5].count++;
-            else scoreBuckets[6].count++;
-        });
-
-        // Chart 5: Top Risk Segments (Ranked Bar)
-        const segmentsMap = {};
-        loans.forEach(l => {
-            const seg = l.risk_segment || 'Other';
-            if (!segmentsMap[seg]) {
-                segmentsMap[seg] = { name: seg, count: 0, totalDelinq: 0, riskLoans: 0 };
-            }
-            segmentsMap[seg].count++;
-            segmentsMap[seg].totalDelinq += (l.days_delinquent || 0);
-            if (l.days_delinquent > 60) segmentsMap[seg].riskLoans++;
-        });
-
-        const riskOrder = { 'Very Low Risk': 1, 'Low Risk': 2, 'Medium Risk': 3, 'High Risk': 4 };
-
-        const riskSegments = Object.values(segmentsMap).map(s => ({
-            name: s.name,
-            count: s.count,
-            avgDelinquency: Math.round(s.totalDelinq / s.count),
-            vulnerability: Math.min(100, Math.round((s.riskLoans / s.count) * 500)), // Scale for impact
-        })).sort((a, b) => (riskOrder[a.name] || 99) - (riskOrder[b.name] || 99));
-
-        // Scatter data: Workload vs Delinquency per Associate
-        const associatesWithStats = associates.map(assoc => {
-            const assocAccounts = accounts.filter(a => a.associate_id === assoc.associate_id);
-            const delinqCount = assocAccounts.filter(a => a.days_delinquent > 0).length;
-            return {
-                ...assoc,
-                workload: assocAccounts.length,
-                delinqRate: ((delinqCount / assocAccounts.length) * 100).toFixed(1)
-            };
-        });
-
-        // Page 3A: Loss Mitigation
-        const mitigationKpis = [
-            { label: 'Pending Requests', value: '1,284', trend: '+12%', up: false },
-            { label: 'Approved Mods', value: '3,420', trend: '+5.4%', up: true },
-            { label: 'Denial Rate', value: '14.2%', trend: '-2.1%', up: true },
-            { label: 'Avg Process Time', value: '12 Days', trend: '-1 Day', up: true },
-            { label: 'Escalation Rate', value: '3.8%', trend: '+0.5%', up: false },
-            { label: 'Deferrals Active', value: '842', trend: '-4.2%', up: true },
-            { label: 'Trial Period Success Rate', value: '92%', trend: '+1.2%', up: true },
-            { label: 'Net Loss Avoided', value: '$4.2M', trend: '+$240k', up: true }
-        ];
-
-        const programDistribution = [
-            { name: 'Loan Mod', value: 45 },
-            { name: 'Forbearance', value: 25 },
-            { name: 'Deferral', value: 20 },
-            { name: 'Short Sale', value: 10 }
-        ];
-
-        const volumeTrend = [
-            { month: 'Jul 2025', requests: 420, completed: 380 },
-            { month: 'Aug 2025', requests: 450, completed: 410 },
-            { month: 'Sep 2025', requests: 480, completed: 440 },
-            { month: 'Oct 2025', requests: 520, completed: 490 },
-            { month: 'Nov 2025', requests: 590, completed: 530 },
-            { month: 'Dec 2025', requests: 650, completed: 610 }
-        ];
-
-        const statusBreakdown = [
-            { stage: 'Submission', doc: 120, review: 80, final: 40 },
-            { stage: 'Processing', doc: 240, review: 150, final: 90 },
-            { stage: 'Decisioning', doc: 310, review: 200, final: 110 },
-            { stage: 'Fulfillment', doc: 180, review: 140, final: 40 }
-        ];
-
-        const durationDistribution = [
-            { range: '0-7d', count: 15 },
-            { range: '8-14d', count: 35 },
-            { range: '15-21d', count: 25 },
-            { range: '22-30d', count: 18 },
-            { range: '30d+', count: 7 }
-        ];
-
-        // Page 2B: Risk Segmentation Data
-        const geoDelinquency = Object.values(regionStats).map(r => ({
-            region: r.region,
-            delinquencyRate: parseFloat(((r.riskCount / r.total) * 100).toFixed(1))
-        }));
-
-        const scoreVsDelinquency = loans.filter((_, i) => i % 10 === 0).map(l => ({
-            score: l.credit_score,
-            delinquency: l.days_delinquent,
-            amount: l.loan_amount / 1000
-        }));
-
-        const ageBuckets = {};
-        loans.forEach(l => {
-            const ageGroup = Math.floor(l.loan_age_months / 12) * 12;
-            const key = `${ageGroup}-${ageGroup + 11}m`;
-            if (!ageBuckets[key]) ageBuckets[key] = { name: key, riskSum: 0, count: 0 };
-            ageBuckets[key].count++;
-            if (l.days_delinquent > 60) ageBuckets[key].riskSum++;
-        });
-        const loanAgeVsRisk = Object.values(ageBuckets)
-            .sort((a, b) => {
-                const ageA = parseInt(a.name.split('-')[0]);
-                const ageB = parseInt(b.name.split('-')[0]);
-                return ageA - ageB;
-            })
-            .map(b => ({
-                name: b.name,
-                riskRate: parseFloat(((b.riskSum / b.count) * 100).toFixed(1))
-            }));
-
-        const vintageMap = {};
-        loans.forEach(l => {
-            const date = new Date(l.origination_date);
-            const year = date.getFullYear();
-            const month = MONTHS_SHORT[date.getMonth()];
-            if (!vintageMap[year]) vintageMap[year] = {};
-            if (!vintageMap[year][month]) vintageMap[year][month] = { sum: 0, count: 0 };
-            vintageMap[year][month].count++;
-            if (l.days_delinquent > 30) vintageMap[year][month].sum++;
-        });
-        const vintageHeatmap = Object.entries(vintageMap)
-            .sort((a, b) => a[0] - b[0])
-            .map(([year, months]) => ({
-                year,
-                ...Object.fromEntries(Object.entries(months).map(([m, data]) => [m, parseFloat(((data.sum / data.count) * 100).toFixed(1))]))
-            }));
-
-        const segmentContribution = Object.values(regionStats).map(r => ({
-            region: r.region,
-            'Low Risk': Math.floor(Math.random() * 40) + 30,
-            'Medium Risk': Math.floor(Math.random() * 20) + 10,
-            'High Risk': Math.floor(Math.random() * 10) + 2
-        }));
-
+        const fullData = processDashboardSlices(associates, enrichedLoans);
         return {
-            raw: { associates, accounts, loans },
-            kpis: [
-                { label: 'Total Active Accounts', value: totalAccounts.toLocaleString(), trend: '+2.4%', up: true },
-                { label: 'Total Associates', value: totalAssociates, trend: 'Stable', up: null },
-                { label: 'Avg Accounts / Associate', value: avgAccounts, trend: '-1.2%', up: true },
-                { label: 'Overall Delinquency Rate', value: `${overallDelinquencyRate}%`, trend: '+0.5%', up: false },
-                { label: '90+ Days Delinquency', value: `${seriousDelinquencyRate}%`, trend: '-0.2%', up: true },
-                { label: 'New Delinquencies', value: '142', trend: '+12', up: false },
-                { label: 'Cures (This Month)', value: curedAccounts.length.toLocaleString(), trend: '+8%', up: true },
-                { label: 'Net Portfolio Movement', value: '+42', trend: 'Positive', up: true }
-            ],
-            performance: {
-                kpis: [
-                    { label: 'Portfolio Value', value: `$${(totalPortfolioValue / 1e9).toFixed(2)}B`, trend: '+4.2%', up: true },
-                    { label: 'Avg Loan Size', value: `$${(avgLoanSize / 1e3).toFixed(0)}K`, trend: '+1.5%', up: true },
-                    { label: 'Weighted Credit Score', value: avgCreditScore, trend: '-2 pts', up: false },
-                    { label: 'Delinquency (by Value)', value: `${portfolioDelinqRate}%`, trend: '+0.3%', up: false },
-                    { label: 'High Risk Exposure', value: `${highRiskExposure}%`, trend: '-0.1%', up: true },
-                    { label: 'Proj. Loss Reserve', value: `$${(totalPortfolioValue * 0.012 / 1e6).toFixed(1)}M`, trend: '+5.4%', up: false },
-                    { label: 'Loan Apps (Monthly)', value: '1,240', trend: '+180', up: true },
-                    { label: 'Approval Rate', value: '62%', trend: '-2%', up: false }
-                ],
-                delinquencyTrend,
-                statusDistribution,
-                valueVsRisk,
-                scoreBuckets,
-                riskSegments
-            },
-            segmentation: {
-                kpis: [
-                    { label: 'Weighted Risk Score', value: '72/100', trend: '+2', up: false },
-                    { label: 'Geo Variance', value: '14%', trend: 'Stable', up: null },
-                    { label: 'Highest Risk Region', value: 'West', trend: '+1.2%', up: false },
-                    { label: 'Vintage Default', value: '2.4%', trend: '-0.3%', up: true },
-                    { label: 'Net Credit Margin', value: '3.8%', trend: '+0.1%', up: true },
-                    { label: 'Risk Concentration', value: '18%', trend: '+0.5%', up: false },
-                    { label: 'Outreach Targets', value: '450', trend: '+42', up: false }
-                ],
-                geoDelinquency,
-                scoreVsDelinquency,
-                loanAgeVsRisk,
-                vintageHeatmap,
-                segmentContribution
-            },
-            forecasting: {
-                kpis: [
-                    { label: 'Projected Delinquency', value: '8.2%', trend: '+0.4%', up: false },
-                    { label: 'Early Warnings', value: '482', trend: '+12', up: false },
-                    { label: 'Transition Rate', value: '4.5%', trend: '+0.2%', up: false },
-                    { label: 'ECL Provision', value: '$12.4M', trend: '+$1.2M', up: false },
-                    { label: 'Risk Velocity', value: 'High', trend: 'Increasing', up: false },
-                    { label: 'Expected Cures', value: '142', trend: '-8', up: false },
-                    { label: 'Reserve Adequacy', value: '112%', trend: 'Stable', up: true }
-                ],
-                delinquencyForecast: [
-                    ...delinquencyTrend.map(d => ({ ...d, type: 'Historical' })),
-                    { month: 'Jan 2026', rate: parseFloat((delinquencyTrend[delinquencyTrend.length - 1].rate + 0.2).toFixed(1)), type: 'Projected' },
-                    { month: 'Feb 2026', rate: parseFloat((delinquencyTrend[delinquencyTrend.length - 1].rate + 0.5).toFixed(1)), type: 'Projected' },
-                    { month: 'Mar 2026', rate: parseFloat((delinquencyTrend[delinquencyTrend.length - 1].rate + 0.3).toFixed(1)), type: 'Projected' }
-                ],
-                transitionMatrix: [
-                    { from: 'Current', to: 'Current', value: 94.2 },
-                    { from: 'Current', to: '30-60', value: 4.5 },
-                    { from: 'Current', to: '60-90', value: 0.8 },
-                    { from: 'Current', to: '90+', value: 0.5 },
-                    { from: '30-60', to: 'Current', value: 42.1 },
-                    { from: '30-60', to: '30-60', value: 38.5 },
-                    { from: '30-60', to: '60-90', value: 15.4 },
-                    { from: '30-60', to: '90+', value: 4.0 },
-                    { from: '60-90', to: 'Current', value: 12.5 },
-                    { from: '60-90', to: '60-90', value: 45.2 },
-                    { from: '60-90', to: '90+', value: 42.3 }
-                ],
-                earlyWarningSignals: [
-                    { signal: 'Multiple Inquiries', count: 450, impact: 'High' },
-                    { signal: 'Payment Variance', count: 820, impact: 'Medium' },
-                    { signal: 'Limit Utilization', count: 310, impact: 'High' },
-                    { signal: 'Non-Loan Miss', count: 180, impact: 'Critical' },
-                    { signal: 'Employment Update', count: 65, impact: 'Low' }
-                ],
-                riskFunnelData: [
-                    { stage: 'High Risk Filter', value: 12500, label: 'Portfolio Filter' },
-                    { stage: 'Early Warning', value: 4200, label: 'Behavioral Alert' },
-                    { stage: 'Pre-Delinquent', value: 1800, label: '1-15 Day Past Due' },
-                    { stage: 'Serious Risk', value: 650, label: '30+ Day Transition' }
-                ],
-                riskScoreBuckets: [
-                    { bucket: '0-20', count: 85, name: 'Very Low' },
-                    { bucket: '21-40', count: 1420, name: 'Low' },
-                    { bucket: '41-60', count: 3200, name: 'Medium' },
-                    { bucket: '61-80', count: 1850, name: 'High' },
-                    { bucket: '81-100', count: 420, name: 'Critical' }
-                ],
-                decisionInsights: [
-                    { id: 1, type: 'critical', message: 'Liquidity risk spike detected in West region segments.', impact: 'High' },
-                    { id: 2, type: 'warning', message: 'Early stage delinquency rising in credit scores < 620.', impact: 'Medium' },
-                    { id: 3, type: 'info', message: 'Forecasted recovery rates improved by 2.4% for Q1.', impact: 'Low' }
-                ]
-            },
-            diagnostics: {
-                migratedRate,
-                migratedDelinqRate,
-                nonMigratedDelinqRate,
-                scatterData: associatesWithStats.map(a => ({ x: a.workload, y: parseFloat(a.delinqRate), name: a.name })),
-                kpis: [
-                    { label: 'Total Migrated', value: migratedAccounts.length.toLocaleString(), trend: '+5.4%', up: false },
-                    { label: 'Migration Rate', value: `${migratedRate}%`, trend: '+1.5%', up: false },
-                    { label: 'Delinq (Migrated)', value: `${migratedDelinqRate}%`, trend: '+2.1%', up: false },
-                    { label: 'Delinq (Non-Mig.)', value: `${nonMigratedDelinqRate}%`, trend: '-0.4%', up: true },
-                    { label: 'Avg Stabilization', value: '18 Days', trend: '-2 Days', up: true },
-                    { label: 'Re-migration Risk', value: '4.2%', trend: '+0.5%', up: false },
-                    { label: 'Efficiency Variance', value: `${(migratedDelinqRate - nonMigratedDelinqRate).toFixed(1)}%`, trend: 'Alert', up: false }
-                ],
-                volumeTrend: [
-                    { month: 'Jul 2025', volume: 420 },
-                    { month: 'Aug 2025', volume: 380 },
-                    { month: 'Sep 2025', volume: 510 },
-                    { month: 'Oct 2025', volume: 460 },
-                    { month: 'Nov 2025', volume: 620 },
-                    { month: 'Dec 2025', volume: 580 }
-                ],
-                groupedComparison: [
-                    { status: 'Current', Migrated: 65, 'Non-Migrated': 82 },
-                    { status: '30-60 Days', Migrated: 22, 'Non-Migrated': 12 },
-                    { status: '60-90 Days', Migrated: 8, 'Non-Migrated': 4 },
-                    { status: '90+ Days', Migrated: 5, 'Non-Migrated': 2 }
-                ],
-                outcomeBreakdown: [
-                    { outcome: 'Cured', value: 450, fill: 'var(--success)' },
-                    { outcome: 'Stayed Delinquent', value: 320, fill: 'var(--warning)' },
-                    { outcome: 'Deteriorated', value: 180, fill: 'var(--danger)' },
-                    { outcome: 'Other/Closed', value: 50, fill: 'var(--text-muted)' }
-                ],
-                stabilizationMatrix: migratedAccounts.slice(0, 50).map((a, i) => ({
-                    x: Math.floor(Math.random() * 60), // Days since migration
-                    y: a.days_delinquent, // Current Delinquency
-                    z: Math.floor(Math.random() * 100), // Account Balance (proxy)
-                    name: `Acc-${a.account_id}`
-                })),
-                deteriorationFlow: [
-                    { from: 'Current', to: '30-60', value: 450 },
-                    { from: '30-60', to: '60-90', value: 180 },
-                    { from: '60-90', to: '90+', value: 85 },
-                    { from: '90+', to: 'Legal', value: 42 }
-                ],
-                weeklyBreakdown: {
-                    outcomes: [
-                        { week: 'Week 1', Cured: 120, Stayed: 80, Deteriorated: 40 },
-                        { week: 'Week 2', Cured: 140, Stayed: 70, Deteriorated: 30 },
-                        { week: 'Week 3', Cured: 110, Stayed: 90, Deteriorated: 50 },
-                        { week: 'Week 4', Cured: 130, Stayed: 60, Deteriorated: 20 }
-                    ],
-                    migration: [
-                        { week: 'Week 1', Migrated: 85, 'Non-Migrated': 120 },
-                        { week: 'Week 2', Migrated: 92, 'Non-Migrated': 115 },
-                        { week: 'Week 3', Migrated: 78, 'Non-Migrated': 130 },
-                        { week: 'Week 4', Migrated: 105, 'Non-Migrated': 105 }
-                    ]
-                }
-            },
-            associatePerformance: {
-                Associates: ['Associate 1', 'Associate 2', 'Associate 3', 'Associate 4'],
-                performanceData: [
-                    { month: 'Jan', 'Associate 1': { del: 45, cur: 12 }, 'Associate 2': { del: 40, cur: 10 }, 'Associate 3': { del: 38, cur: 15 }, 'Associate 4': { del: 42, cur: 11 } },
-                    { month: 'Feb', 'Associate 1': { del: 42, cur: 15 }, 'Associate 2': { del: 38, cur: 12 }, 'Associate 3': { del: 40, cur: 18 }, 'Associate 4': { del: 45, cur: 14 } },
-                    { month: 'Mar', 'Associate 1': { del: 48, cur: 10 }, 'Associate 2': { del: 42, cur: 15 }, 'Associate 3': { del: 42, cur: 20 }, 'Associate 4': { del: 48, cur: 16 } },
-                    { month: 'Apr', 'Associate 1': { del: 38, cur: 18 }, 'Associate 2': { del: 45, cur: 18 }, 'Associate 3': { del: 45, cur: 22 }, 'Associate 4': { del: 42, cur: 18 } },
-                    { month: 'May', 'Associate 1': { del: 40, cur: 20 }, 'Associate 2': { del: 45, cur: 22 }, 'Associate 3': { del: 48, cur: 25 }, 'Associate 4': { del: 40, cur: 22 } },
-                    { month: 'Jun', 'Associate 1': { del: 44, cur: 14 }, 'Associate 2': { del: 40, cur: 25 }, 'Associate 3': { del: 42, cur: 30 }, 'Associate 4': { del: 35, cur: 25 } },
-                    { month: 'Jul', 'Associate 1': { del: 50, cur: 12 }, 'Associate 2': { del: 48, cur: 28 }, 'Associate 3': { del: 45, cur: 32 }, 'Associate 4': { del: 38, cur: 20 } },
-                    { month: 'Aug', 'Associate 1': { del: 52, cur: 16 }, 'Associate 2': { del: 50, cur: 30 }, 'Associate 3': { del: 48, cur: 35 }, 'Associate 4': { del: 40, cur: 22 } },
-                    { month: 'Sep', 'Associate 1': { del: 46, cur: 22 }, 'Associate 2': { del: 48, cur: 32 }, 'Associate 3': { del: 50, cur: 38 }, 'Associate 4': { del: 44, cur: 25 } },
-                    { month: 'Oct', 'Associate 1': { del: 40, cur: 25 }, 'Associate 2': { del: 46, cur: 35 }, 'Associate 3': { del: 52, cur: 40 }, 'Associate 4': { del: 42, cur: 28 } },
-                    { month: 'Nov', 'Associate 1': { del: 35, cur: 28 }, 'Associate 2': { del: 44, cur: 38 }, 'Associate 3': { del: 48, cur: 42 }, 'Associate 4': { del: 40, cur: 30 } },
-                    { month: 'Dec', 'Associate 1': { del: 30, cur: 32 }, 'Associate 2': { del: 42, cur: 40 }, 'Associate 3': { del: 45, cur: 45 }, 'Associate 4': { del: 38, cur: 35 } }
-                ]
-            },
-            lossMitigation: {
-                kpis: mitigationKpis,
-                programDistribution,
-                volumeTrend,
-                statusBreakdown,
-                durationDistribution
-            },
-            effectiveness: {
-                kpis: [
-                    { label: 'Overall Cure Rate', value: '68%', trend: '+4.2%', up: true },
-                    { label: 'Overall Re-default', value: '12.4%', trend: '-1.5%', up: true },
-                    { label: 'Avg Cure Time', value: '45 Days', trend: '-2 Days', up: true },
-                    { label: 'Program ROI', value: '8.4x', trend: '+0.2x', up: true },
-                    { label: 'Self-Cure Rate', value: '18%', trend: '-2.1%', up: false },
-                    { label: 'Success Variance', value: '5.2%', trend: 'Stable', up: null },
-                    { label: 'Efficiency Score', value: '94/100', trend: '+2', up: true }
-                ],
-                cureRateByProgram: [
-                    { program: 'Mod', rate: 72 },
-                    { program: 'Forbearance', rate: 58 },
-                    { program: 'Deferral', rate: 84 },
-                    { program: 'Short Sale', rate: 42 }
-                ],
-                reDefaultRateByProgram: [
-                    { program: 'Mod', rate: 8 },
-                    { program: 'Forbearance', rate: 15 },
-                    { program: 'Deferral', rate: 6 },
-                    { program: 'Short Sale', rate: 22 }
-                ],
-                outcomeFunnel: [
-                    { stage: 'Approved', count: 1000 },
-                    { stage: 'Trial Start', count: 850 },
-                    { stage: 'Trial Success', count: 720 },
-                    { stage: 'Permanent Mod', count: 680 }
-                ],
-                riskVsOutcome: [
-                    { x: 10, y: 90, name: 'Low Risk' },
-                    { x: 30, y: 75, name: 'Med-Low' },
-                    { x: 50, y: 60, name: 'Medium' },
-                    { x: 70, y: 45, name: 'Med-High' },
-                    { x: 90, y: 25, name: 'High Risk' }
-                ],
-                assistanceFrequency: [
-                    { frequency: '1st Time', count: 820 },
-                    { frequency: '2nd Time', count: 240 },
-                    { frequency: '3+ Times', count: 85 }
-                ],
-                performanceHeatmap: [
-                    { program: 'Mod', segment: 'Low LTV', score: 92 },
-                    { program: 'Mod', segment: 'High LTV', score: 78 },
-                    { program: 'Deferral', segment: 'Low LTV', score: 88 },
-                    { program: 'Deferral', segment: 'High LTV', score: 82 },
-                    { program: 'Forbearance', segment: 'Low LTV', score: 75 },
-                    { program: 'Forbearance', segment: 'High LTV', score: 62 }
-                ]
-            },
-            coaching: {
-                kpis: [
-                    { label: 'Early -> 90+ Conv.', value: '14.2%', trend: '-2.1%', up: true },
-                    { label: 'Avg Time-to-Cure', value: '42 Days', trend: '-3 Days', up: true },
-                    { label: 'Coaching Pipeline', value: '14', trend: '+2', up: false },
-                    { label: 'Team Quality Score', value: '88/100', trend: '+4', up: true },
-                    { label: 'Escalation Speed', value: '4.2h', trend: '-0.5h', up: true },
-                    { label: 'Resolution Rate', value: '92%', trend: '+1.5%', up: true },
-                    { label: 'Compliance Score', value: '98%', trend: 'Stable', up: null },
-                    { label: 'Training Impact', value: '+12%', trend: 'Positive', up: true }
-                ],
-                riskHeatmap: associates.slice(0, 10).map(a => ({
-                    name: a.associate_name,
-                    Speed: Math.floor(Math.random() * 40) + 60,
-                    Quality: Math.floor(Math.random() * 30) + 70,
-                    Consistency: Math.floor(Math.random() * 40) + 50,
-                    Compliance: Math.floor(Math.random() * 10) + 90
-                })),
-                priorityMatrix: associates.map(a => {
-                    const accs = accounts.filter(acc => acc.associate_id === a.associate_id);
-                    const delinq = accs.filter(acc => acc.days_delinquent > 0).length;
-                    const rate = accs.length > 0 ? (delinq / accs.length) * 100 : 0;
-                    const cures = accs.filter(acc => acc.cured_flag === 1).length;
-                    const cureRate = accs.length > 0 ? (cures / accs.length) * 100 : 0;
-
-                    return {
-                        x: parseFloat(rate.toFixed(1)), // Risk (Delinquency Rate)
-                        y: parseFloat(cureRate.toFixed(1)), // Performance (Cure Rate)
-                        z: accs.length, // Workload
-                        name: a.associate_name
-                    };
-                }),
-                stageFunnel: [
-                    { stage: '1-15 Days', count: accounts.filter(a => a.days_delinquent > 0 && a.days_delinquent <= 15).length },
-                    { stage: '16-30 Days', count: accounts.filter(a => a.days_delinquent > 15 && a.days_delinquent <= 30).length },
-                    { stage: '31-60 Days', count: accounts.filter(a => a.days_delinquent > 30 && a.days_delinquent <= 60).length },
-                    { stage: '61-90 Days', count: accounts.filter(a => a.days_delinquent > 60 && a.days_delinquent <= 90).length },
-                    { stage: '90+ Days', count: accounts.filter(a => a.days_delinquent > 90).length }
-                ],
-                timeToCureDist: [
-                    { range: '0-15d', count: 420 },
-                    { range: '16-30d', count: 850 },
-                    { range: '31-45d', count: 1240 },
-                    { range: '46-60d', count: 620 },
-                    { range: '60d+', count: 310 }
-                ],
-                repeatDelinquency: [
-                    { category: '1st Time', Migrated: 450, Stable: 820 },
-                    { category: '2nd Time', Migrated: 310, Stable: 240 },
-                    { category: '3+ Times', Migrated: 180, Stable: 95 }
-                ],
-                suggestedActions: [
-                    { id: 1, associate: 'Associate 04', risk: 'Critical', action: 'Schedule 1-on-1 for Workload Stress', impact: '+15% Cure Rate' },
-                    { id: 2, associate: 'Associate 12', risk: 'Warning', action: 'Assign "Warm Handoff" Training', impact: '-10% Migration Churn' },
-                    { id: 3, associate: 'Associate 07', risk: 'High', action: 'Re-allocate 50 accounts to South Team', impact: 'Burnout Mitigation' },
-                    { id: 4, associate: 'Associate 15', risk: 'Stable', action: 'Approve for Advanced Compliance Lead', impact: 'Team Quality Boost' }
-                ]
-            },
-            strategy: {
-                kpis: [
-                    { label: 'Strategy Effectiveness', value: '84%', trend: '+4.5%', up: true },
-                    { label: 'Opt-in Rate', value: '62%', trend: '+1.5%', up: true },
-                    { label: 'Simulation Stability', value: 'High', trend: 'Stable', up: null },
-                    { label: 'Proj. Recovery', value: '$12.8M', trend: '+$1.4M', up: true },
-                    { label: 'Policy Adherence', value: '96%', trend: '+0.5%', up: true },
-                    { label: 'Net Strategy ROI', value: '5.2x', trend: '+0.4x', up: true },
-                    { label: 'Warning Sign Count', value: '12', trend: '-2', up: true }
-                ],
-                usageOutcomeTrend: [
-                    { month: 'Jul 2025', usage: 45, outcome: 38 },
-                    { month: 'Aug 2025', usage: 52, outcome: 42 },
-                    { month: 'Sep 2025', usage: 48, outcome: 45 },
-                    { month: 'Oct 2025', usage: 61, outcome: 54 },
-                    { month: 'Nov 2025', usage: 55, outcome: 50 },
-                    { month: 'Dec 2025', usage: 72, outcome: 68 }
-                ],
-                stressTestData: [
-                    { scenario: 'Baseline', coverage: 85, impact: 12 },
-                    { scenario: 'Stress 1', coverage: 70, impact: 25 },
-                    { scenario: 'Stress 2', coverage: 55, impact: 42 },
-                    { scenario: 'Aggressive', coverage: 95, impact: 8 }
-                ],
-                customerFlow: [
-                    { from: 'Identification', to: 'Outreach', value: 1200 },
-                    { from: 'Outreach', to: 'Application', value: 850 },
-                    { from: 'Application', to: 'Approval', value: 620 },
-                    { from: 'Approval', to: 'Trial Success', value: 580 }
-                ],
-                policyMatrix: [
-                    { x: 20, y: 80, name: 'Standard Mod', z: 400 },
-                    { x: 40, y: 70, name: 'Forbearance A', z: 250 },
-                    { x: 60, y: 40, name: 'Short Sale Beta', z: 120 },
-                    { x: 10, y: 90, name: 'Deferral Ext', z: 300 },
-                    { x: 80, y: 20, name: 'Risk High B', z: 80 }
-                ],
-                roiAnalysis: [
-                    { program: 'Loan Mod', cost: 1200, return: 8500 },
-                    { program: 'Forbearance', cost: 800, return: 4200 },
-                    { program: 'Deferral', cost: 500, return: 4800 },
-                    { program: 'Short Sale', cost: 2500, return: 3100 }
-                ],
-                recommendations: [
-                    { id: 1, policy: 'Extended Deferral', impact: 'High', feasibility: '92%', action: 'Deploy to West Region' },
-                    { id: 2, policy: 'Interest Rate Cap', impact: 'Medium', feasibility: '85%', action: 'A/B Test in North' },
-                    { id: 3, policy: 'Auto-Forbearance', impact: 'Critical', feasibility: '60%', action: 'Review Compliance' },
-                    { id: 4, policy: 'Handoff Acceleration', impact: 'High', feasibility: '95%', action: 'Update Workflow' }
-                ]
-            }
+            ...fullData,
+            rawAssociates: associates,
+            rawLoans: enrichedLoans
         };
     } catch (error) {
         console.error('Error loading data:', error);

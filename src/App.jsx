@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -20,24 +20,32 @@ import {
   Activity,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getDashboardData } from './DataLoader';
+import { getDashboardData, processDashboardSlices } from './DataLoader';
 import PortfolioOverview from './pages/PortfolioOverview';
 import OperationalDiagnostics from './pages/OperationalDiagnostics';
 import CoachingInsights from './pages/CoachingInsights';
-import LoanPerformance from './pages/LoanPerformance';
+import LoanAnalysis from './pages/LoanAnalysis';
 import RiskSegmentation from './pages/RiskSegmentation';
 import RiskForecasting from './pages/RiskForecasting';
 import LossMitigation from './pages/LossMitigation';
 import AssistanceEffectiveness from './pages/AssistanceEffectiveness';
 import AssistanceStrategy from './pages/AssistanceStrategy';
 import AssociatePerformance from './pages/AssociatePerformance';
+import HighLevelFilters from './components/HighLevelFilters';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('1A');
+  const [rawData, setRawData] = useState({ associates: [], loans: [] });
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [expandedGroups, setExpandedGroups] = useState(['G1', 'G2', 'G3']);
+  const [filters, setFilters] = useState({
+    loanType: 'All',
+    region: 'All',
+    investor: 'All'
+  });
+  
   const mainContentRef = useRef(null);
 
   useEffect(() => {
@@ -48,10 +56,34 @@ const App = () => {
 
   useEffect(() => {
     getDashboardData().then(res => {
-      setData(res);
+      if (res) {
+        setRawData({ associates: res.rawAssociates, loans: res.rawLoans });
+        setData(res);
+      }
       setLoading(false);
     });
   }, []);
+
+  const filteredData = useMemo(() => {
+    if (!rawData.loans.length) return data;
+    
+    let loans = rawData.loans;
+    if (filters.loanType !== 'All') {
+      loans = loans.filter(l => l["Loan Type"] === filters.loanType);
+    }
+    if (filters.region !== 'All') {
+      loans = loans.filter(l => l.Region === filters.region);
+    }
+    if (filters.investor !== 'All') {
+      loans = loans.filter(l => l["Investor Code"] === filters.investor);
+    }
+    
+    return processDashboardSlices(rawData.associates, loans);
+  }, [rawData, filters, data]);
+
+  const handleFilterChange = (type, value) => {
+    setFilters(prev => ({ ...prev, [type]: value }));
+  };
 
   const navGroups = [
     {
@@ -179,21 +211,17 @@ const App = () => {
             </div>
           ))}
         </nav>
-
       </aside>
 
-      <main className="main-content" ref={mainContentRef}>
+      <main className={`main-content ${!sidebarOpen ? 'expanded' : ''}`} ref={mainContentRef}>
         <header className="header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="sidebar-toggle-btn"
-            >
-              <Menu size={18} />
+            <button className="sidebar-toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+              <Menu size={20} />
             </button>
-            <h2 className="page-title">
-              {allItems.find(n => n.id === activeTab)?.label || 'Dashboard'}
-            </h2>
+            <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '1.2rem' }}>
+              {allItems.find(i => i.id === activeTab)?.label}
+            </span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
@@ -217,37 +245,43 @@ const App = () => {
           </div>
         </header>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="dashboard-grid"
-          >
-            {loading ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '400px' }}>
-                <p style={{ color: 'var(--text-muted)', fontWeight: 500 }}>Loading Portfolio Data...</p>
-              </div>
-            ) : (
-              activeTab === '1A' ? <PortfolioOverview data={data} /> :
-                activeTab === '1B' ? <OperationalDiagnostics data={data} /> :
-                  activeTab === '1C' ? <CoachingInsights data={data} /> :
-                    activeTab === '1D' ? <AssociatePerformance data={data} /> :
-                      activeTab === '2A' ? <LoanPerformance data={data} /> :
-                        activeTab === '2B' ? <RiskSegmentation data={data} /> :
-                          activeTab === '2C' ? <RiskForecasting data={data} /> :
-                            activeTab === '3A' ? <LossMitigation data={data} /> :
-                              activeTab === '3B' ? <AssistanceEffectiveness data={data} /> :
-                                activeTab === '3C' ? <AssistanceStrategy data={data} /> :
-                                  <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                                    <h3 style={{ marginBottom: '1rem' }}>Page {activeTab} Coming Soon</h3>
-                                    <p>We are currently building this section of the dashboard.</p>
-                                  </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
+        <div className="dashboard-content">
+          <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+            {!loading && <HighLevelFilters onFilterChange={handleFilterChange} />}
+            
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="dashboard-grid"
+              >
+                {loading ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '400px' }}>
+                    <p style={{ color: 'var(--text-muted)', fontWeight: 500 }}>Loading Portfolio Data...</p>
+                  </div>
+                ) : (
+                  activeTab === '1A' ? <PortfolioOverview data={filteredData} /> :
+                    activeTab === '1B' ? <OperationalDiagnostics data={filteredData} /> :
+                      activeTab === '1C' ? <CoachingInsights data={filteredData} /> :
+                        activeTab === '1D' ? <AssociatePerformance data={filteredData} /> :
+                          activeTab === '2A' ? <LoanAnalysis data={filteredData} /> :
+                            activeTab === '2B' ? <RiskSegmentation data={filteredData} /> :
+                              activeTab === '2C' ? <RiskForecasting data={filteredData} /> :
+                                activeTab === '3A' ? <LossMitigation data={filteredData} /> :
+                                  activeTab === '3B' ? <AssistanceEffectiveness data={filteredData} /> :
+                                    activeTab === '3C' ? <AssistanceStrategy data={filteredData} /> :
+                                      <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                        <h3 style={{ marginBottom: '1rem' }}>Page {activeTab} Coming Soon</h3>
+                                        <p>We are currently building this section of the dashboard.</p>
+                                      </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
       </main>
     </>
   );

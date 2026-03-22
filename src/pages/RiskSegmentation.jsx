@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { Map, Target, TrendingUp, AlertTriangle, Shield, Filter, ChevronDown, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { CHART_CONFIG } from '../chartConfig';
+import HighLevelFilters from '../components/HighLevelFilters';
 
 const KPICard = ({ label, value, trend, up }) => (
     <div className="card">
@@ -53,7 +54,6 @@ const HeatmapCell = ({ value }) => {
 };
 
 const RiskSegmentation = ({ data }) => {
-    const [filterRegion, setFilterRegion] = useState('All');
 
     if (!data || !data.segmentation) return null;
     const { kpis, geoDelinquency, scoreVsDelinquency, loanAgeVsRisk, vintageHeatmap, segmentContribution } = data.segmentation;
@@ -61,28 +61,14 @@ const RiskSegmentation = ({ data }) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     return (
-        <div style={{ padding: '0 1rem', animation: 'fadeIn 0.5s ease-out' }}>
-            <div className="section-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', animation: 'fadeIn 0.5s ease-out' }}>
+            <div className="section-header">
                 <div>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Risk Segmentation Analysis</h2>
                     <p style={{ color: 'var(--text-muted)' }}>Deep dive into portfolio risk pockets across regions, scores, and vintage cohorts.</p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'white', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                    <Filter size={16} color="var(--text-muted)" />
-                    <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Region:</span>
-                    <select
-                        value={filterRegion}
-                        onChange={(e) => setFilterRegion(e.target.value)}
-                        style={{ border: 'none', fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)', cursor: 'pointer', outline: 'none' }}
-                    >
-                        <option>All</option>
-                        <option>North</option>
-                        <option>South</option>
-                        <option>East</option>
-                        <option>West</option>
-                    </select>
-                </div>
             </div>
+
 
             <div className="kpi-grid">
                 {kpis.map((kpi, i) => (
@@ -93,7 +79,7 @@ const RiskSegmentation = ({ data }) => {
             <div className="charts-grid" style={{ marginBottom: '1.5rem' }}>
                 <div className="chart-card span-6">
                     <SectionHeader title="Geographic Delinquency Distribution" icon={Map} />
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={geoDelinquency} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
@@ -117,7 +103,7 @@ const RiskSegmentation = ({ data }) => {
 
                 <div className="chart-card span-6">
                     <SectionHeader title="Regional Risk Composition" />
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={segmentContribution} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
@@ -163,7 +149,7 @@ const RiskSegmentation = ({ data }) => {
                         </div>
                     </div>
 
-                    <div style={{ height: 280 }}>
+                    <div style={{ height: 280, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <ScatterChart margin={{ top: 10, right: CHART_CONFIG.marginRight, bottom: CHART_CONFIG.marginBottom + 10, left: CHART_CONFIG.marginLeft }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
@@ -186,7 +172,7 @@ const RiskSegmentation = ({ data }) => {
 
                 <div className="chart-card">
                     <SectionHeader title="Loan Age vs Risk Profile" icon={Shield} />
-                    <div style={{ height: 300 }}>
+                    <div style={{ height: 300, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={loanAgeVsRisk} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />

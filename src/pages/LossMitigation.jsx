@@ -16,29 +16,14 @@ const LossMitigation = ({ data }) => {
     const { lossMitigation } = data;
 
     return (
-        <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-            <div className="section-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', animation: 'fadeIn 0.5s ease-out' }}>
+            <div className="section-header">
                 <div>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Loss Mitigation Performance</h2>
-                    <p style={{ color: 'var(--text-muted)' }}>Tracking assistance programs, volume trends, and processing efficiency.</p>
+                    <p style={{ color: 'var(--text-muted)' }}>Tracking assistance programs, volume trends, and processing efficiency by Stop Code.</p>
                 </div>
-                <button style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    padding: '0.6rem 1rem',
-                    background: 'white',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    color: 'var(--text-main)'
-                }}>
-                    <Filter size={16} />
-                    <span>Program Filter</span>
-                </button>
             </div>
+
 
 
 
@@ -63,7 +48,7 @@ const LossMitigation = ({ data }) => {
                     <div className="chart-header">
                         <h3 className="chart-title">Program Distribution</h3>
                     </div>
-                    <div style={{ height: 300 }}>
+                    <div style={{ height: 300, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
@@ -90,7 +75,7 @@ const LossMitigation = ({ data }) => {
                     <div className="chart-header">
                         <h3 className="chart-title">Assistance Volume Trend</h3>
                     </div>
-                    <div style={{ height: 300 }}>
+                    <div style={{ height: 300, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={lossMitigation.volumeTrend} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -116,7 +101,7 @@ const LossMitigation = ({ data }) => {
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Workload Flow by Program Lifecycle Stage</span>
                     </div>
 
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
                                 layout="vertical"
@@ -147,7 +132,7 @@ const LossMitigation = ({ data }) => {
                     <div className="chart-header">
                         <h3 className="chart-title">Assistance Duration Distribution</h3>
                     </div>
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={lossMitigation.durationDistribution} margin={{ top: 10, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

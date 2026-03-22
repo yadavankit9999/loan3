@@ -23,8 +23,8 @@ const AssistanceStrategy = ({ data }) => {
     }));
 
     return (
-        <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
-            <div className="section-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', animation: 'fadeIn 0.5s ease-out' }}>
+            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>Assistance Strategy & Policy Simulation</h2>
                     <p style={{ color: 'var(--text-muted)' }}>Evaluate policy impact and simulate "What-If" scenarios for portfolio assistance.</p>
@@ -43,6 +43,7 @@ const AssistanceStrategy = ({ data }) => {
                     </select>
                 </div>
             </div>
+
 
 
 
@@ -68,7 +69,7 @@ const AssistanceStrategy = ({ data }) => {
                         <h3 className="chart-title">Assistance Usage vs Outcome</h3>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Historical Performance</span>
                     </div>
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={strategy.usageOutcomeTrend} margin={{ top: 20, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -110,7 +111,7 @@ const AssistanceStrategy = ({ data }) => {
                             </div>
                         </div>
                     </div>
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={simulatedStressData} margin={{ top: 20, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -184,7 +185,7 @@ const AssistanceStrategy = ({ data }) => {
                         </div>
                     </div>
 
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <ScatterChart margin={{ top: 10, right: CHART_CONFIG.marginRight + 10, bottom: CHART_CONFIG.marginBottom + 10, left: CHART_CONFIG.marginLeft }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -213,7 +214,7 @@ const AssistanceStrategy = ({ data }) => {
                         <h3 className="chart-title">Program ROI Analysis</h3>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Cost vs. Simulated Return</span>
                     </div>
-                    <div style={{ height: 350 }}>
+                    <div style={{ height: 350, minWidth: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={strategy.roiAnalysis} margin={{ top: 20, right: CHART_CONFIG.marginRight, left: CHART_CONFIG.marginLeft, bottom: CHART_CONFIG.marginBottom }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
