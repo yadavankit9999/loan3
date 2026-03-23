@@ -233,7 +233,7 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                         <option value="L">(L)egal/Litigation</option>
                         <option value="D">(D)isaster - Natural</option>
                         <option value="M">(M)ilitary Protection</option>
-                        <option value="O">(O)ss Mitigation</option>
+                        <option value="O">L(O)ss Mitigation</option>
                         <option value="S">(S)uccessor in Interest</option>
                         <option value="P">(P)aid In Full</option>
                         <option value="R">(R)eal Estate Owned</option>
