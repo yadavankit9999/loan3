@@ -43,7 +43,13 @@ const App = () => {
   const [filters, setFilters] = useState({
     loanType: 'All',
     region: 'All',
-    investor: 'All'
+    state: 'All',
+    investor: 'All',
+    delinquency: 'All',
+    occupancy: 'All',
+    stopCode: 'All',
+    propertyType: 'All',
+    productLine: 'All'
   });
   
   const mainContentRef = useRef(null);
@@ -74,8 +80,34 @@ const App = () => {
     if (filters.region !== 'All') {
       loans = loans.filter(l => l.Region === filters.region);
     }
+    if (filters.state !== 'All') {
+      loans = loans.filter(l => l.State === filters.state);
+    }
     if (filters.investor !== 'All') {
       loans = loans.filter(l => l["Investor Code"] === filters.investor);
+    }
+    if (filters.delinquency !== 'All') {
+      if (filters.delinquency === '16 - 29') {
+        loans = loans.filter(l => l.daysPastDue >= 16 && l.daysPastDue <= 29);
+      } else if (filters.delinquency === '30 - 59') {
+        loans = loans.filter(l => l.daysPastDue >= 30 && l.daysPastDue <= 59);
+      } else if (filters.delinquency === '60 - 89') {
+        loans = loans.filter(l => l.daysPastDue >= 60 && l.daysPastDue <= 89);
+      } else if (filters.delinquency === '90+') {
+        loans = loans.filter(l => l.daysPastDue >= 90);
+      }
+    }
+    if (filters.occupancy !== 'All') {
+      loans = loans.filter(l => l["Occup Code"] === filters.occupancy);
+    }
+    if (filters.stopCode !== 'All') {
+      loans = loans.filter(l => l["Stop Code"] === filters.stopCode);
+    }
+    if (filters.propertyType !== 'All') {
+      loans = loans.filter(l => l["Property Type"] === filters.propertyType);
+    }
+    if (filters.productLine !== 'All') {
+      loans = loans.filter(l => l["Product Line"] === filters.productLine);
     }
     
     return processDashboardSlices(rawData.associates, loans);
@@ -246,8 +278,8 @@ const App = () => {
         </header>
 
         <div className="dashboard-content">
-          <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
-            {!loading && <HighLevelFilters onFilterChange={handleFilterChange} />}
+          <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%', padding: '1.5rem 1.5rem 0 1.5rem' }}>
+            {!loading && <HighLevelFilters onFilterChange={handleFilterChange} activeTab={activeTab} />}
             
             <AnimatePresence mode="wait">
               <motion.div

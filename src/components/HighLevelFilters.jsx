@@ -1,41 +1,70 @@
 import React from 'react';
-import { Landmark, Layers, MapPin, ShieldCheck, XCircle, Filter } from 'lucide-react';
+import { 
+    Landmark, 
+    Layers, 
+    MapPin, 
+    ShieldCheck, 
+    XCircle, 
+    Filter, 
+    Home, 
+    Building2, 
+    Hash,
+    Map
+} from 'lucide-react';
 
-const HighLevelFilters = ({ onFilterChange }) => {
+const HighLevelFilters = ({ onFilterChange, activeTab }) => {
+    const isPerformanceOps = ['1A', '1B', '1C', '1D'].includes(activeTab);
+    const isCoachingOrAssoc = ['1C', '1D'].includes(activeTab);
+
     const filterStyles = {
         container: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem',
+            marginBottom: '0.5rem',
+        },
+        row: {
             display: 'flex',
             alignItems: 'stretch',
             background: 'white',
             borderRadius: '16px',
             border: '1px solid #e2e8f0',
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-            marginBottom: '1.5rem',
             overflow: 'hidden',
         },
         searchSection: {
             display: 'flex',
             alignItems: 'center',
-            padding: '0 1.5rem',
+            padding: '0 1.25rem',
             background: '#f8fafc',
             borderRight: '1px solid #e2e8f0',
             color: '#64748b'
         },
-        filterGroup: {
+        filterGroup: (inactive) => ({
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            padding: '0.75rem 1.25rem',
+            padding: '0.5rem 1rem',
             borderRight: '1px solid #f1f5f9',
-            transition: 'background 0.2s ease',
-            cursor: 'pointer',
+            opacity: inactive ? 0.4 : 1,
+            pointerEvents: inactive ? 'none' : 'auto',
+            background: inactive ? '#f8fafc' : 'transparent',
+        }),
+        groupLabel: {
+            fontSize: '0.6rem',
+            fontWeight: 800,
+            color: 'var(--primary)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            padding: '0 1rem',
+            marginBottom: '-0.25rem'
         },
         labelWrapper: {
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
-            marginBottom: '0.25rem'
+            marginBottom: '0.15rem'
         },
         label: {
             fontSize: '0.65rem',
@@ -47,7 +76,7 @@ const HighLevelFilters = ({ onFilterChange }) => {
         select: {
             border: 'none',
             outline: 'none',
-            fontSize: '0.9rem',
+            fontSize: '0.85rem',
             fontWeight: 600,
             color: '#1e293b',
             background: 'transparent',
@@ -70,90 +99,188 @@ const HighLevelFilters = ({ onFilterChange }) => {
 
     return (
         <div style={filterStyles.container}>
-            <div style={filterStyles.searchSection} title="Filter Portfolio">
-                <Filter size={20} />
-            </div>
-
-            {/* Bank Filter */}
-            <div style={filterStyles.filterGroup}>
-                <div style={filterStyles.labelWrapper}>
-                    <Landmark size={12} color="#6366f1" />
-                    <label style={filterStyles.label}>Entity / Bank</label>
+            {/* Row 1: Core Filters & Geography */}
+            <div style={filterStyles.row}>
+                <div style={filterStyles.searchSection} title="Core Portfolio Filters">
+                    <Filter size={18} />
                 </div>
-                <select style={filterStyles.select} defaultValue="East West Bank">
-                    <option>East West Bank</option>
-                    <option disabled>Other Entity</option>
-                </select>
-            </div>
 
-            {/* Loan Type Filter */}
-            <div style={filterStyles.filterGroup}>
-                <div style={filterStyles.labelWrapper}>
-                    <Layers size={12} color="#6366f1" />
-                    <label style={filterStyles.label}>Loan Product</label>
+                {/* Relabeled: Loan Type */}
+                <div style={filterStyles.filterGroup(false)}>
+                    <div style={filterStyles.labelWrapper}>
+                        <Layers size={12} color="#6366f1" />
+                        <label style={filterStyles.label}>Loan Type</label>
+                    </div>
+                    <select style={filterStyles.select} onChange={(e) => onFilterChange?.('loanType', e.target.value)}>
+                        <option value="All">All Types</option>
+                        <option>Conventional</option>
+                        <option>ARM</option>
+                        <option>Foreign National</option>
+                        <option>Specialty</option>
+                        <option>Equity</option>
+                        <option>Construction</option>
+                        <option>Lot</option>
+                    </select>
                 </div>
-                <select 
-                    style={filterStyles.select} 
-                    onChange={(e) => onFilterChange?.('loanType', e.target.value)}
+
+                {/* New: Investor Code - Restricted */}
+                <div style={filterStyles.filterGroup(isCoachingOrAssoc)}>
+                    <div style={filterStyles.labelWrapper}>
+                        <Landmark size={12} color="#6366f1" />
+                        <label style={filterStyles.label}>Investor Code</label>
+                    </div>
+                    <select style={filterStyles.select} onChange={(e) => onFilterChange?.('investor', e.target.value)}>
+                        <option value="All">All Investors</option>
+                        <option>EWB-Int</option>
+                        <option>FNMA</option>
+                        <option>FHLMC</option>
+                        <option>GNMA</option>
+                        <option>PRIV</option>
+                    </select>
+                </div>
+
+                {/* Geography Section */}
+                <div style={{ ...filterStyles.filterGroup(false), flex: 0.8, background: '#f8fafc', borderRight: 'none' }}>
+                    <label style={{ ...filterStyles.label, color: 'var(--primary)', marginBottom: '0.25rem' }}>GEOGRAPHY</label>
+                </div>
+
+                {/* New: Region Filter */}
+                <div style={filterStyles.filterGroup(false)}>
+                    <div style={filterStyles.labelWrapper}>
+                        <Map size={12} color="#6366f1" />
+                        <label style={filterStyles.label}>Region</label>
+                    </div>
+                    <select style={filterStyles.select} onChange={(e) => onFilterChange?.('region', e.target.value)}>
+                        <option value="All">All Regions</option>
+                        <option>East</option>
+                        <option>West</option>
+                        <option>North</option>
+                        <option>South</option>
+                    </select>
+                </div>
+
+                {/* Refactored: State Filter */}
+                <div style={filterStyles.filterGroup(false)}>
+                    <div style={filterStyles.labelWrapper}>
+                        <MapPin size={12} color="#6366f1" />
+                        <label style={filterStyles.label}>State</label>
+                    </div>
+                    <select style={filterStyles.select} onChange={(e) => onFilterChange?.('state', e.target.value)}>
+                        <option value="All">All States</option>
+                        <option>CA</option>
+                        <option>NY</option>
+                        <option>TX</option>
+                        <option>FL</option>
+                        <option>WA</option>
+                    </select>
+                </div>
+
+                {/* Relabeled: Delinquency Type */}
+                <div style={{ ...filterStyles.filterGroup(false), borderRight: 'none' }}>
+                    <div style={filterStyles.labelWrapper}>
+                        <ShieldCheck size={12} color="#6366f1" />
+                        <label style={filterStyles.label}>Delinquency Type</label>
+                    </div>
+                    <select style={filterStyles.select} onChange={(e) => onFilterChange?.('delinquency', e.target.value)}>
+                        <option value="All">All Buckets</option>
+                        <option>16 - 29</option>
+                        <option>30 - 59</option>
+                        <option>60 - 89</option>
+                        <option>90+</option>
+                    </select>
+                </div>
+
+                <button 
+                    style={filterStyles.resetBtn} 
+                    onClick={() => window.location.reload()} 
+                    title="Reset All Filters"
                 >
-                    <option value="All">All Products</option>
-                    <option>Conventional</option>
-                    <option>ARM</option>
-                    <option>Foreign National</option>
-                    <option>Specialty</option>
-                    <option>Equity</option>
-                    <option>Construction</option>
-                </select>
+                    <XCircle size={18} />
+                </button>
             </div>
 
-            {/* State Filter */}
-            <div style={filterStyles.filterGroup}>
-                <div style={filterStyles.labelWrapper}>
-                    <MapPin size={12} color="#6366f1" />
-                    <label style={filterStyles.label}>Geography / State</label>
+            {/* Row 2: Occupancy, Stop Code, Property, Product */}
+            <div style={filterStyles.row}>
+                <div style={{ ...filterStyles.searchSection, background: '#f1f5f9' }} title="Secondary Filters">
+                    <Sliders size={18} />
                 </div>
-                <select 
-                    style={filterStyles.select} 
-                    onChange={(e) => onFilterChange?.('state', e.target.value)}
-                >
-                    <option value="All">All States</option>
-                    <option>CA</option>
-                    <option>NY</option>
-                    <option>TX</option>
-                    <option>FL</option>
-                    <option>WA</option>
-                </select>
-            </div>
 
-            {/* Delinquency Filter */}
-            <div style={{ ...filterStyles.filterGroup, borderRight: 'none' }}>
-                <div style={filterStyles.labelWrapper}>
-                    <ShieldCheck size={12} color="#6366f1" />
-                    <label style={filterStyles.label}>Risk Status</label>
+                {/* New: Occupancy Code - Restricted */}
+                <div style={filterStyles.filterGroup(isCoachingOrAssoc)}>
+                    <div style={filterStyles.labelWrapper}>
+                        <Home size={12} color="#6366f1" />
+                        <label style={filterStyles.label}>Occupancy Code</label>
+                    </div>
+                    <select style={filterStyles.select} onChange={(e) => onFilterChange?.('occupancy', e.target.value)}>
+                        <option value="All">All Occupancy</option>
+                        <option>Primary Residence</option>
+                        <option>Second Home</option>
+                        <option>Investment Property</option>
+                        <option>Non-Owner Occupied</option>
+                    </select>
                 </div>
-                <select 
-                    style={filterStyles.select} 
-                    onChange={(e) => onFilterChange?.('delinquency', e.target.value)}
-                >
-                    <option value="All">All Statuses</option>
-                    <option>Current</option>
-                    <option>30-Day</option>
-                    <option>60-Day</option>
-                    <option>90-Day</option>
-                </select>
-            </div>
 
-            <button 
-                style={filterStyles.resetBtn} 
-                onClick={() => window.location.reload()} 
-                title="Reset Filters"
-                onMouseOver={(e) => e.currentTarget.style.color = '#ef4444'}
-                onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}
-            >
-                <XCircle size={20} />
-            </button>
+                {/* New: Stop Code - Restricted */}
+                <div style={filterStyles.filterGroup(isCoachingOrAssoc)}>
+                    <div style={filterStyles.labelWrapper}>
+                        <XCircle size={12} color="#ef4444" />
+                        <label style={filterStyles.label}>Stop Code</label>
+                    </div>
+                    <select style={filterStyles.select} onChange={(e) => onFilterChange?.('stopCode', e.target.value)}>
+                        <option value="All">All Stop Codes</option>
+                        <option>B</option>
+                        <option>F</option>
+                        <option>L</option>
+                        <option>D</option>
+                        <option>M</option>
+                        <option>S</option>
+                        <option>P</option>
+                        <option>R</option>
+                        <option>T</option>
+                    </select>
+                </div>
+
+                {/* New: Property Type - Restricted (Active except Performance & Ops) */}
+                <div style={filterStyles.filterGroup(isPerformanceOps)}>
+                    <div style={filterStyles.labelWrapper}>
+                        <Building2 size={12} color="#6366f1" />
+                        <label style={filterStyles.label}>Property Type</label>
+                    </div>
+                    <select style={filterStyles.select} onChange={(e) => onFilterChange?.('propertyType', e.target.value)}>
+                        <option value="All">All Properties</option>
+                        <option>Residential Property (1 - 4 Units)</option>
+                        <option>Commercial & Multi-Family (5+ Units)</option>
+                    </select>
+                </div>
+
+                {/* New: Product Line - Restricted (Active except Performance & Ops) */}
+                <div style={{ ...filterStyles.filterGroup(isPerformanceOps), borderRight: 'none' }}>
+                    <div style={filterStyles.labelWrapper}>
+                        <Hash size={12} color="#6366f1" />
+                        <label style={filterStyles.label}>Product Line</label>
+                    </div>
+                    <select style={filterStyles.select} onChange={(e) => onFilterChange?.('productLine', e.target.value)}>
+                        <option value="All">All Lines</option>
+                        <option>CON</option>
+                        <option>CRE</option>
+                        <option>SPE</option>
+                    </select>
+                </div>
+
+                <div style={{ width: '48px' }} /> {/* Spacer to align with reset btn above */}
+            </div>
         </div>
     );
 };
+
+// Dummy slider icon since lucide-react name is different
+const Sliders = ({ size }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" />
+        <line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" />
+        <line x1="20" y1="21" x2="20" y2="16" /><line x1="20" y1="12" x2="20" y2="3" />
+        <line x1="2" y1="14" x2="6" y2="14" /><line x1="10" y1="8" x2="14" y2="8" /><line x1="18" y1="16" x2="22" y2="16" />
+    </svg>
+);
 
 export default HighLevelFilters;

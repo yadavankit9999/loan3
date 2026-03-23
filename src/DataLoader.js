@@ -439,6 +439,13 @@ export const getDashboardData = async () => {
             appraisalVal: parseFloat(l["Appraisal Value"]) || 0,
             daysPastDue: parseInt(l["# Days Past Due"]) || 0,
             chargeOff: parseFloat(l["Charge off Amount"]) || 0,
+            // New Filter Fields
+            "Occup Code": l["Occup Code"] || 'All',
+            "Stop Code": l["Stop Code"] || 'All',
+            "Property Type": l["Property Type"] || 'All',
+            "Product Line": l["Product Line"] || 'All',
+            "Investor Code": l["Investor Code"] || 'All',
+            "State": l["State"] || 'CA'
         }));
 
         const fullData = processDashboardSlices(associates, enrichedLoans);
