@@ -213,10 +213,10 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                     </div>
                     <select style={filterStyles.select} onChange={(e) => onFilterChange?.('occupancy', e.target.value)}>
                         <option value="All">All Occupancy</option>
-                        <option>Primary Residence</option>
-                        <option>Second Home</option>
-                        <option>Investment Property</option>
-                        <option>Non-Owner Occupied</option>
+                        <option value="1">(1) Primary Residence</option>
+                        <option value="2">(2) Second Home</option>
+                        <option value="3">(3) Investment Property</option>
+                        <option value="4">(4) Non-Owner Occupied</option>
                     </select>
                 </div>
 
@@ -228,15 +228,16 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                     </div>
                     <select style={filterStyles.select} onChange={(e) => onFilterChange?.('stopCode', e.target.value)}>
                         <option value="All">All Stop Codes</option>
-                        <option>B</option>
-                        <option>F</option>
-                        <option>L</option>
-                        <option>D</option>
-                        <option>M</option>
-                        <option>S</option>
-                        <option>P</option>
-                        <option>R</option>
-                        <option>T</option>
+                        <option value="B">(B)ankruptcy</option>
+                        <option value="F">(F)oreclosure</option>
+                        <option value="L">(L)egal/Litigation</option>
+                        <option value="D">(D)isaster - Natural</option>
+                        <option value="M">(M)ilitary Protection</option>
+                        <option value="O">(O)ss Mitigation</option>
+                        <option value="S">(S)uccessor in Interest</option>
+                        <option value="P">(P)aid In Full</option>
+                        <option value="R">(R)eal Estate Owned</option>
+                        <option value="T">(T)ransfer - Servicing</option>
                     </select>
                 </div>
 
@@ -261,9 +262,9 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                     </div>
                     <select style={filterStyles.select} onChange={(e) => onFilterChange?.('productLine', e.target.value)}>
                         <option value="All">All Lines</option>
-                        <option>CON</option>
-                        <option>CRE</option>
-                        <option>SPE</option>
+                        <option value="CON">(CON)sumer Residential</option>
+                        <option value="CRE">(CRE) Commercial Real Estate</option>
+                        <option value="SPE">(SPE)cialty Lending</option>
                     </select>
                 </div>
 
