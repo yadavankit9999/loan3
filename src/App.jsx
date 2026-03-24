@@ -51,7 +51,7 @@ const App = () => {
     propertyType: 'All',
     productLine: 'All'
   });
-  
+
   const mainContentRef = useRef(null);
 
   useEffect(() => {
@@ -72,7 +72,7 @@ const App = () => {
 
   const filteredData = useMemo(() => {
     if (!rawData.loans.length) return data;
-    
+
     let loans = rawData.loans;
     if (filters.loanType !== 'All') {
       loans = loans.filter(l => l["Loan Type"] === filters.loanType);
@@ -109,7 +109,7 @@ const App = () => {
     if (filters.productLine !== 'All') {
       loans = loans.filter(l => l["Product Line"] === filters.productLine);
     }
-    
+
     return processDashboardSlices(rawData.associates, loans);
   }, [rawData, filters, data]);
 
@@ -185,7 +185,7 @@ const App = () => {
         <div className="sidebar-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem' }}>
           <div className="logo-container">
             <img src="/logo.webp" alt="Logo" className="logo-img" onError={(e) => e.target.style.display = 'none'} />
-            <h1 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary)', letterSpacing: '-0.5px', marginTop: '0.25rem' }}>LoanPulse</h1>
+            <h1 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary)', letterSpacing: '-0.5px', marginTop: '0.25rem' }}>Loan Portfolio Intelligence</h1>
           </div>
           <button
             className="mobile-close-btn"
@@ -280,7 +280,7 @@ const App = () => {
         <div className="dashboard-content">
           <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%', padding: '1.5rem 1.5rem 0 1.5rem' }}>
             {!loading && <HighLevelFilters onFilterChange={handleFilterChange} activeTab={activeTab} />}
-            
+
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
