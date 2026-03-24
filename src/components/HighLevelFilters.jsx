@@ -146,7 +146,7 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                 </div>
 
                 {/* New: Region Filter */}
-                <div style={filterStyles.filterGroup(is1C1D)}>
+                <div style={filterStyles.filterGroup(false)}>
                     <div style={filterStyles.labelWrapper}>
                         <Map size={12} color="#6366f1" />
                         <label style={filterStyles.label}>Region</label>
@@ -161,7 +161,7 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                 </div>
 
                 {/* Refactored: State Filter */}
-                <div style={filterStyles.filterGroup(is1C1D)}>
+                <div style={filterStyles.filterGroup(false)}>
                     <div style={filterStyles.labelWrapper}>
                         <MapPin size={12} color="#6366f1" />
                         <label style={filterStyles.label}>State</label>
