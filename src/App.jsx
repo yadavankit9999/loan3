@@ -182,10 +182,22 @@ const App = () => {
       />
 
       <aside className={`sidebar ${!sidebarOpen ? 'collapsed' : ''}`}>
-        <div className="sidebar-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem' }}>
+        <div className="sidebar-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <div className="logo-container">
             <img src="/logo.webp" alt="Logo" className="logo-img" onError={(e) => e.target.style.display = 'none'} />
-            <h1 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary)', letterSpacing: '-0.5px', marginTop: '0.25rem' }}>Loan Portfolio Intelligence</h1>
+            <h1 style={{ 
+                fontSize: '1.1rem', 
+                fontWeight: 800, 
+                color: 'var(--primary)', 
+                letterSpacing: '0.5px', 
+                marginTop: '0.5rem',
+                lineHeight: '1.3',
+                maxWidth: '180px',
+                textTransform: 'uppercase',
+                opacity: 0.8
+            }}>
+              Loan Portfolio Intelligence
+            </h1>
           </div>
           <button
             className="mobile-close-btn"
