@@ -13,8 +13,9 @@ import {
 } from 'lucide-react';
 
 const HighLevelFilters = ({ onFilterChange, activeTab }) => {
+    const is1A1B = ['1A', '1B'].includes(activeTab);
+    const is1C1D = ['1C', '1D'].includes(activeTab);
     const isPerformanceOps = ['1A', '1B', '1C', '1D'].includes(activeTab);
-    const isCoachingOrAssoc = ['1C', '1D'].includes(activeTab);
 
     const filterStyles = {
         container: {
@@ -106,7 +107,7 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                 </div>
 
                 {/* Relabeled: Loan Type */}
-                <div style={filterStyles.filterGroup(false)}>
+                <div style={filterStyles.filterGroup(is1C1D)}>
                     <div style={filterStyles.labelWrapper}>
                         <Layers size={12} color="#6366f1" />
                         <label style={filterStyles.label}>Loan Type</label>
@@ -124,7 +125,7 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                 </div>
 
                 {/* New: Investor Code - Restricted */}
-                <div style={filterStyles.filterGroup(isCoachingOrAssoc)}>
+                <div style={filterStyles.filterGroup(is1C1D)}>
                     <div style={filterStyles.labelWrapper}>
                         <Landmark size={12} color="#6366f1" />
                         <label style={filterStyles.label}>Investor Code</label>
@@ -206,7 +207,7 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                 </div>
 
                 {/* New: Occupancy Code - Restricted */}
-                <div style={filterStyles.filterGroup(isCoachingOrAssoc)}>
+                <div style={filterStyles.filterGroup(is1C1D)}>
                     <div style={filterStyles.labelWrapper}>
                         <Home size={12} color="#6366f1" />
                         <label style={filterStyles.label}>Occupancy Code</label>
@@ -221,7 +222,7 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                 </div>
 
                 {/* New: Stop Code - Restricted */}
-                <div style={filterStyles.filterGroup(isCoachingOrAssoc)}>
+                <div style={filterStyles.filterGroup(is1A1B || is1C1D)}>
                     <div style={filterStyles.labelWrapper}>
                         <XCircle size={12} color="#ef4444" />
                         <label style={filterStyles.label}>Stop Code</label>
@@ -242,7 +243,7 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                 </div>
 
                 {/* New: Property Type - Restricted (Active except Performance & Ops) */}
-                <div style={filterStyles.filterGroup(isPerformanceOps)}>
+                <div style={filterStyles.filterGroup(is1A1B)}>
                     <div style={filterStyles.labelWrapper}>
                         <Building2 size={12} color="#6366f1" />
                         <label style={filterStyles.label}>Property Type</label>
@@ -255,7 +256,7 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                 </div>
 
                 {/* New: Product Line - Restricted (Active except Performance & Ops) */}
-                <div style={{ ...filterStyles.filterGroup(isPerformanceOps), borderRight: 'none' }}>
+                <div style={{ ...filterStyles.filterGroup(is1A1B), borderRight: 'none' }}>
                     <div style={filterStyles.labelWrapper}>
                         <Hash size={12} color="#6366f1" />
                         <label style={filterStyles.label}>Product Line</label>
