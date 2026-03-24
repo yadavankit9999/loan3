@@ -146,7 +146,7 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                 </div>
 
                 {/* New: Region Filter */}
-                <div style={filterStyles.filterGroup(false)}>
+                <div style={filterStyles.filterGroup(is1C1D)}>
                     <div style={filterStyles.labelWrapper}>
                         <Map size={12} color="#6366f1" />
                         <label style={filterStyles.label}>Region</label>
@@ -161,7 +161,7 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                 </div>
 
                 {/* Refactored: State Filter */}
-                <div style={filterStyles.filterGroup(false)}>
+                <div style={filterStyles.filterGroup(is1C1D)}>
                     <div style={filterStyles.labelWrapper}>
                         <MapPin size={12} color="#6366f1" />
                         <label style={filterStyles.label}>State</label>
@@ -243,7 +243,7 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                 </div>
 
                 {/* New: Property Type - Restricted (Active except Performance & Ops) */}
-                <div style={filterStyles.filterGroup(is1A1B)}>
+                <div style={filterStyles.filterGroup(isPerformanceOps)}>
                     <div style={filterStyles.labelWrapper}>
                         <Building2 size={12} color="#6366f1" />
                         <label style={filterStyles.label}>Property Type</label>
@@ -256,7 +256,7 @@ const HighLevelFilters = ({ onFilterChange, activeTab }) => {
                 </div>
 
                 {/* New: Product Line - Restricted (Active except Performance & Ops) */}
-                <div style={{ ...filterStyles.filterGroup(is1A1B), borderRight: 'none' }}>
+                <div style={{ ...filterStyles.filterGroup(isPerformanceOps), borderRight: 'none' }}>
                     <div style={filterStyles.labelWrapper}>
                         <Hash size={12} color="#6366f1" />
                         <label style={filterStyles.label}>Product Line</label>
